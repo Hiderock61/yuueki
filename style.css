@@ -1922,3 +1922,181 @@ button:focus-visible {
 .amida-actions .btn {
   flex: 1;
 }
+
+/* ============================================================
+   Ver.0.5-A オノノケ縁側システム
+   ============================================================ */
+
+/* ----- 「今どうしたい？」状態ボタンパネル ----- */
+.issue-button-panel {
+  padding: 12px 16px 8px;
+  background: #faf5f0;
+  border-top: 1px solid #e8ddd4;
+}
+
+.issue-panel-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b7355;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.issue-button-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* 共通ベース */
+.issue-btn {
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.issue-btn:active {
+  opacity: 0.75;
+  transform: scale(0.97);
+}
+
+/* おばちゃん担当（薄紫） */
+.issue-btn--obasan {
+  background: #f0ecf8;
+  border-color: #c4b0e8;
+  color: #5a3e8a;
+}
+
+/* トリセツくん担当（薄オレンジ） */
+.issue-btn--manual {
+  background: #fff4e8;
+  border-color: #f0c080;
+  color: #8a5a00;
+}
+
+/* 安全さん担当（薄緑） */
+.issue-btn--safety {
+  background: #eef8ee;
+  border-color: #90c890;
+  color: #2a6a2a;
+}
+
+/* 今日はここまで（グレー・控えめ） */
+.issue-btn--close {
+  background: #f5f5f5;
+  border-color: #cccccc;
+  color: #666666;
+  font-weight: 500;
+}
+
+/* ----- 準備中キャラエリア ----- */
+.issue-coming-soon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: #f0ece8;
+  border-radius: 10px;
+  justify-content: center;
+}
+
+.coming-soon-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #b0a090;
+  background: #e8e0d8;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
+}
+
+.coming-soon-char {
+  font-size: 12px;
+  color: #b0a090;
+  padding: 2px 6px;
+  border: 1px dashed #c8b8a8;
+  border-radius: 8px;
+}
+
+/* ----- キャラメッセージバブル ----- */
+.message-character {
+  align-self: flex-start;
+  max-width: 85%;
+  margin-bottom: 12px;
+}
+
+/* おばちゃん担当キャラ */
+.message-character--obasan {
+  background: #f0ecf8;
+  border: 1.5px solid #c4b0e8;
+  border-radius: 0 14px 14px 14px;
+  padding: 10px 14px;
+}
+
+.message-character--obasan .message-header {
+  color: #5a3e8a;
+}
+
+/* トリセツくん */
+.message-character--manual {
+  background: #fff4e8;
+  border: 1.5px solid #f0c080;
+  border-radius: 0 14px 14px 14px;
+  padding: 10px 14px;
+}
+
+.message-character--manual .message-header {
+  color: #8a5a00;
+}
+
+/* 安全さん */
+.message-character--safety {
+  background: #eef8ee;
+  border: 1.5px solid #90c890;
+  border-radius: 0 14px 14px 14px;
+  padding: 10px 14px;
+}
+
+.message-character--safety .message-header {
+  color: #2a6a2a;
+}
+
+/* キャラバッジ（状態バー内） */
+.char-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.char-badge--obasan {
+  background: #f0ecf8;
+  color: #5a3e8a;
+  border: 1px solid #c4b0e8;
+}
+
+.char-badge--manual {
+  background: #fff4e8;
+  color: #8a5a00;
+  border: 1px solid #f0c080;
+}
+
+.char-badge--safety {
+  background: #eef8ee;
+  color: #2a6a2a;
+  border: 1px solid #90c890;
+}

@@ -84,6 +84,73 @@ const state = {
   reviewAnswers: {}
 };
 
+// ===== オノノケ縁側システム（Ver.0.5-A）=====
+
+const CHARACTER_REGISTRY = {
+  obasan: {
+    id: 'obasan',
+    name: 'つながろおばちゃん',
+    emoji: '👵🏻',
+    role: 'decompression',
+    description: '初対面や気まずさをゆるめる'
+  },
+  safety: {
+    id: 'safety',
+    name: '安全さん',
+    emoji: '🦺',
+    role: 'boundary',
+    description: '同意・境界線・断る自由を確認する'
+  },
+  manual: {
+    id: 'manual',
+    name: 'トリセツくん',
+    emoji: '📄',
+    role: 'intent_sorting',
+    description: '目的や関係性の希望を整理する'
+  }
+};
+
+const ISSUE_TO_CHARACTER = {
+  awkward:       'obasan',
+  waiting_reply: 'obasan',
+  close_today:   'obasan',
+  safety_check:  'safety',
+  purpose:       'manual'
+};
+
+// 状態ボタン定義
+const ISSUE_BUTTONS = [
+  { issueType: 'awkward',       label: '😳 気まずい / 沈黙' },
+  { issueType: 'waiting_reply', label: '⏳ 返事を待ってもらいたい' },
+  { issueType: 'purpose',       label: '🔥 目的をはっきりさせたい' },
+  { issueType: 'safety_check',  label: '🦺 安全確認したい' },
+  { issueType: 'close_today',   label: '🚪 今日はここまでにしたい' }
+];
+
+// キャラごとの固定メッセージ
+const CHARACTER_MESSAGES = {
+  awkward: {
+    characterId: 'obasan',
+    text: '呼んでくれてありがとうな。\nちょっと言葉が詰まってもうた？\n\n大丈夫。\nネットの会話なんて、間が空くこともあるで。\n\nおばちゃんが少し間を持っとくから、\n今すぐ返事せんでも大丈夫やで🍵'
+  },
+  waiting_reply: {
+    characterId: 'obasan',
+    text: 'ちょっと待ってもらおか。\n\n今、言葉を選んでるところやから、\n急いで返事せんでも大丈夫。\n\nおばちゃんが少し間を持っとくで🍵'
+  },
+  purpose: {
+    characterId: 'manual',
+    text: '呼んでくれてありがとう。\n\nちょっと期待値のズレが出そうかな。\n\n僕は審判じゃないから、どっちの目的が正しいかは決めないよ。\n\nただ、お互いの目的を曖昧にしたまま進むと、あとで気まずくなりやすい。\n\nいまは、何を求めて話しているのかを、少しだけ整理してみよう。'
+  },
+  safety_check: {
+    characterId: 'safety',
+    text: '呼んでくれて助かる。\n\nちょっと流れが早くなってきたかもしれないな。\n\n誰かを責めるためじゃなくて、\nお互いの足場を確認しよう。\n\n個人情報、連絡先、会う場所、同意、断る自由。\nここは焦らず、ひとつずつ確認していこう。'
+  },
+  close_today: {
+    characterId: 'obasan',
+    text: '今日はここまでにしよか。\n\n目的やノリがちょっと違っただけやから、\n誰も悪うないで。\n\nおばちゃんがこの部屋、やわらかく閉じておくね。\n\nこのあと、ふりかえり部屋で次回の作戦会議しよか。'
+  }
+};
+
 // ===== おばちゃんヘルパーアクション定義（Ver.0.4-A）=====
 // 通常メニュー（迷ったら整理棚）用
 const OBASAN_HELP_ACTIONS = [
@@ -94,7 +161,7 @@ const OBASAN_HELP_ACTIONS = [
 
 // ===== ルーム状態（Ver.0.4-A）=====
 let room = {
-  mode: 'normal'  // 'normal' | 'decompressing' | 'waiting_reply' | 'choice_sorting' | 'choice_lottery' | 'closing'
+  mode: 'normal'  // 'normal' | 'decompressing' | 'waiting_reply' | 'choice_sorting' | 'choice_lottery' | 'character_assist' | 'closing'
 };
 
 let uiState = {
@@ -103,6 +170,11 @@ let uiState = {
     mode: 'idle',       // 'idle' | 'decompressing' | 'helper'
     selectedAction: null,
     helperMode: null    // null | 'sorting' | 'lottery'
+  },
+  assistantTeam: {
+    activeCharacterId: null,
+    activeIssueType: null,
+    lastCharacterId: null
   }
 };
 
@@ -529,11 +601,15 @@ function startVirtualRoom() {
   state.roomFirstMessageSent = false;
   state.roomCalledObasan = false;
 
-  // room / uiState 初期化（Ver.0.3-C）
+  // room / uiState 初期化（Ver.0.3-C / Ver.0.5-A）
   room.mode = 'normal';
   uiState.obasan.summoned = false;
   uiState.obasan.mode = 'idle';
   uiState.obasan.selectedAction = null;
+  uiState.obasan.helperMode = null;
+  uiState.assistantTeam.activeCharacterId = null;
+  uiState.assistantTeam.activeIssueType   = null;
+  uiState.assistantTeam.lastCharacterId   = null;
 
   // 画面移動
   goTo('screen-room');
@@ -551,6 +627,14 @@ function startVirtualRoom() {
   // 状態バーのモードクラスリセット
   const statusBar = document.getElementById('room-status-bar');
   if (statusBar) statusBar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
+  // 状態ボタンパネルリセット（Ver.0.5-A）
+  const issuePanel = document.getElementById('issue-button-panel');
+  if (issuePanel) issuePanel.classList.add('hidden');
+  // ヘルパーメニューリセット
+  const helperPanel = document.getElementById('helper-menu-panel');
+  if (helperPanel) helperPanel.classList.add('hidden');
+  // あみだパネルリセット
+  hideAllAmidaPanels();
 
   // ルーム情報バー更新
   updateRoomInfoBar();
@@ -615,20 +699,32 @@ function updateRoomInfoBar() {
 }
 
 // ----- メッセージ追加ヘルパー -----
-function addMessage(type, text, delay) {
+// type: 'user' | 'partner' | 'obasan' | 'system' | 'sponsor' | 'character'
+// charOpts: { characterId, characterName, characterEmoji, issueType } (ロールが'character'の時のみ必要)
+function addMessage(type, text, delay, metaOrCharOpts) {
   return new Promise(resolve => {
     setTimeout(() => {
       const container = document.getElementById('chat-container');
       if (!container) { resolve(); return; }
 
       const msgEl = document.createElement('div');
-      msgEl.className = 'message message-' + type;
 
-      const iconMap   = { obasan: '👵🏻', user: '💬', partner: '👤', system: '🔔', sponsor: '📢' };
-      const labelMap  = { obasan: 'つながろおばちゃん', user: '自分', partner: partnerPresets[state.selectedPartnerKey]?.name || 'お相手', system: 'システム', sponsor: 'スポンサー' };
+      let icon, label;
 
-      const icon  = iconMap[type]  || '';
-      const label = labelMap[type] || type;
+      if (type === 'character') {
+        // キャラメッセージ専用バブル
+        const charId    = metaOrCharOpts?.characterId || 'obasan';
+        const charData  = CHARACTER_REGISTRY[charId] || CHARACTER_REGISTRY.obasan;
+        icon  = charData.emoji;
+        label = charData.name;
+        msgEl.className = 'message message-character message-character--' + charId;
+      } else {
+        const iconMap  = { obasan: '👵🏻', user: '💬', partner: '👤', system: '🔔', sponsor: '📢' };
+        const labelMap = { obasan: 'つながろおばちゃん', user: '自分', partner: partnerPresets[state.selectedPartnerKey]?.name || 'お相手', system: 'システム', sponsor: 'スポンサー' };
+        icon  = iconMap[type]  || '';
+        label = labelMap[type] || type;
+        msgEl.className = 'message message-' + type;
+      }
 
       const safeText = escapeHtml(text);
       const formattedText = safeText.replace(/\n/g, '<br>');
@@ -641,7 +737,24 @@ function addMessage(type, text, delay) {
         <div class="message-body">${formattedText}</div>
       `;
 
-      const msg = createMessage(type, text, { systemGenerated: type !== 'user' });
+      // createMessageのメタ情報を構築
+      let msgMeta;
+      if (type === 'character') {
+        const charId = metaOrCharOpts?.characterId || 'obasan';
+        msgMeta = {
+          systemGenerated: true,
+          issueType: metaOrCharOpts?.issueType || null,
+          decisionByAI: false,
+          userCanOverride: true,
+          characterId: charId,
+          characterName: CHARACTER_REGISTRY[charId]?.name || '',
+          characterEmoji: CHARACTER_REGISTRY[charId]?.emoji || ''
+        };
+      } else {
+        msgMeta = Object.assign({ systemGenerated: type !== 'user' }, metaOrCharOpts || {});
+      }
+
+      const msg = createMessage(type, text, msgMeta);
       state.roomMessages.push(msg);
 
       container.appendChild(msgEl);
@@ -669,18 +782,21 @@ function updateStatusBar(text) {
 function setRoomUIState(obasanIn) {
   state.obasanInRoom = obasanIn;
 
-  const callWrap   = document.getElementById('call-obasan-wrap');
-  const inputArea  = document.getElementById('room-input-area');
-  const choiceList = document.getElementById('room-choice-list');
-  const endArea    = document.getElementById('room-end-area');
+  const callWrap    = document.getElementById('call-obasan-wrap');
+  const inputArea   = document.getElementById('room-input-area');
+  const choiceList  = document.getElementById('room-choice-list');
+  const endArea     = document.getElementById('room-end-area');
+  const issuePanel  = document.getElementById('issue-button-panel');
 
   if (obasanIn) {
     callWrap.classList.add('hidden');
     inputArea.classList.add('hidden');
+    if (issuePanel) issuePanel.classList.add('hidden');
     updateStatusBar('おばちゃんが場を整えています');
   } else {
     callWrap.classList.remove('hidden');
     inputArea.classList.remove('hidden');
+    if (issuePanel) issuePanel.classList.remove('hidden');
     updateStatusBar('あとはお二人で');
   }
 
@@ -863,6 +979,69 @@ function handleObasanAction(actionId) {
       if (container) container.scrollTop = container.scrollHeight;
     });
   }
+}
+
+// ============================================================
+// オノノケ縁側システム（Ver.0.5-A）
+// ============================================================
+
+// ----- 状態ボタンクリック時のハンドラ -----
+function handleIssueButtonClick(issueType) {
+  // 1. ISSUE_TO_CHARACTERで担当キャラを取得
+  const assignedCharacterId = ISSUE_TO_CHARACTER[issueType];
+  if (!assignedCharacterId) return;
+
+  // 2. CHARACTER_REGISTRYからキャラ情報を取得
+  const character = CHARACTER_REGISTRY[assignedCharacterId];
+  if (!character) return;
+
+  // 3. room.modeを更新
+  if (issueType === 'close_today') {
+    room.mode = 'closing';
+  } else {
+    room.mode = 'character_assist';
+  }
+
+  // 4. uiState.assistantTeamを更新
+  uiState.assistantTeam.activeIssueType    = issueType;
+  uiState.assistantTeam.activeCharacterId  = assignedCharacterId;
+  uiState.assistantTeam.lastCharacterId    = assignedCharacterId;
+
+  // 5. 状態ボタンパネルを閉じる
+  const issuePanel = document.getElementById('issue-button-panel');
+  if (issuePanel) issuePanel.classList.add('hidden');
+
+  // 6. 入力欄を隐す
+  const inputArea = document.getElementById('room-input-area');
+  const callWrap  = document.getElementById('call-obasan-wrap');
+  if (inputArea) inputArea.classList.add('hidden');
+
+  // 7. キャラごとの固定メッセージを表示
+  const msgData = CHARACTER_MESSAGES[issueType];
+  if (!msgData) return;
+
+  const statusLabel = character.emoji + ' ' + character.name + 'が入りました';
+  updateStatusBar(statusLabel);
+
+  addMessage('character', msgData.text, 300, {
+    characterId: assignedCharacterId,
+    issueType: issueType
+  }).then(() => {
+    // close_todayの場合は終了エリアを表示
+    if (issueType === 'close_today') {
+      updateStatusBar('今日はここまで');
+      if (callWrap) callWrap.classList.add('hidden');
+      const endArea = document.getElementById('room-end-area');
+      if (endArea) endArea.classList.remove('hidden');
+    } else {
+      // その他は入力欄を再表示
+      if (inputArea) inputArea.classList.remove('hidden');
+      // 状態ボタンを再表示
+      if (issuePanel) issuePanel.classList.remove('hidden');
+    }
+    const container = document.getElementById('chat-container');
+    if (container) container.scrollTop = container.scrollHeight;
+  });
 }
 
 // ============================================================

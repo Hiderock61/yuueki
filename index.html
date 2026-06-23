@@ -306,6 +306,35 @@
         <!-- JSで動的に追加 -->
       </div>
 
+      <!-- 今どうしたい？状態ボタン（Ver.0.5-A） -->
+      <div class="issue-button-panel hidden" id="issue-button-panel">
+        <div class="issue-panel-header">今どうしたい？</div>
+        <div class="issue-button-grid">
+          <button class="issue-btn issue-btn--obasan" onclick="handleIssueButtonClick('awkward')">
+            😳 気まずい / 沈黙
+          </button>
+          <button class="issue-btn issue-btn--obasan" onclick="handleIssueButtonClick('waiting_reply')">
+            ⏳ 返事を待ってもらいたい
+          </button>
+          <button class="issue-btn issue-btn--manual" onclick="handleIssueButtonClick('purpose')">
+            🔥 目的をはっきりさせたい
+          </button>
+          <button class="issue-btn issue-btn--safety" onclick="handleIssueButtonClick('safety_check')">
+            🦺 安全確認したい
+          </button>
+          <button class="issue-btn issue-btn--close" onclick="handleIssueButtonClick('close_today')">
+            🚪 今日はここまでにしたい
+          </button>
+        </div>
+        <!-- 準備中キャラエリア -->
+        <div class="issue-coming-soon">
+          <span class="coming-soon-label">準備中</span>
+          <span class="coming-soon-char">😎 ダモリさん</span>
+          <span class="coming-soon-char">🕺🏻 ノリ助</span>
+          <span class="coming-soon-char">🫨 ヒデロコ</span>
+        </div>
+      </div>
+
       <!-- おばさんを呼ぶボタン（非常口） -->
       <div class="call-obasan-wrap" id="call-obasan-wrap">
         <button class="call-obasan-button" id="call-obasan-btn" onclick="callObasan()">
