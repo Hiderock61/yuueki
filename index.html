@@ -264,7 +264,7 @@
       <div class="header-bar">
         <button class="back-btn" onclick="goTo('screen-partner-select')">← 戻る</button>
         <span class="app-logo" id="room-header-title">👵🏻 一対一ルーム</span>
-        <span class="room-version">Ver.0.2</span>
+        <span class="room-version">Ver.0.4-A</span>
       </div>
 
       <!-- スポンサー枠（仮） -->
@@ -295,16 +295,84 @@
         <span class="room-status-text" id="room-status-text">おばちゃんが場を整えています…</span>
       </div>
 
+      <!-- お茶タイムバナー（wait_reply選択時に表示） -->
+      <div class="tea-time-banner hidden" id="tea-time-banner">
+        <span class="tea-time-icon">🍵</span>
+        <span class="tea-time-text">お茶タイム中：今は少し言葉を選んでいます</span>
+      </div>
+
       <!-- チャットタイムライン -->
       <div class="chat-container" id="chat-container">
         <!-- JSで動的に追加 -->
       </div>
 
-      <!-- おばさんを呼ぶボタン -->
+      <!-- おばさんを呼ぶボタン（非常口） -->
       <div class="call-obasan-wrap" id="call-obasan-wrap">
         <button class="call-obasan-button" id="call-obasan-btn" onclick="callObasan()">
           👵🏻 おばちゃんを呼ぶ
         </button>
+        <!-- 通常メニューボタン -->
+        <button class="helper-menu-btn" id="helper-menu-btn" onclick="toggleHelperMenu()">
+          🎲 迷ったら整理棚
+        </button>
+      </div>
+
+      <!-- 通常ヘルパーメニュー（迷ったら整理棚） -->
+      <div class="helper-menu-panel hidden" id="helper-menu-panel">
+        <div class="helper-menu-header">
+          <span class="helper-menu-title">🗂 迷ったら整理棚</span>
+          <button class="helper-menu-close" onclick="closeHelperMenu()">✕</button>
+        </div>
+        <div class="helper-menu-body">
+          <button class="helper-menu-item" onclick="startHelperAction('sort_choice')">
+            <span class="helper-item-icon">🗂</span>
+            <span class="helper-item-text">迷ったら整理してもらう</span>
+          </button>
+          <button class="helper-menu-item helper-menu-item-lottery" onclick="startHelperAction('light_lottery')">
+            <span class="helper-item-icon">🎲</span>
+            <span class="helper-item-label">おばちゃんあみだ</span>
+            <span class="helper-item-sublabel">どれにしようかな</span>
+          </button>
+          <button class="helper-menu-item" onclick="startHelperAction('safety_check')">
+            <span class="helper-item-icon">🛡</span>
+            <span class="helper-item-text">安全だけ確認する</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- あみだ：低リスク確認パネル -->
+      <div class="amida-panel hidden" id="amida-risk-check">
+        <div class="amida-panel-header">🎲 おばちゃんあみだ</div>
+        <div class="amida-panel-body" id="amida-risk-check-body">
+          <!-- JSで動的に追加 -->
+        </div>
+      </div>
+
+      <!-- あみだ：選択肢入力パネル -->
+      <div class="amida-panel hidden" id="amida-input-panel">
+        <div class="amida-panel-header">🎲 選択肢を入れてな（2〜4個）</div>
+        <div class="amida-note">⚠️ 個人情報・安全・お金・性的判断は入れないでください</div>
+        <div class="amida-inputs" id="amida-inputs">
+          <input class="amida-input" type="text" placeholder="選択肢 1" id="amida-choice-1" maxlength="30">
+          <input class="amida-input" type="text" placeholder="選択肢 2" id="amida-choice-2" maxlength="30">
+          <input class="amida-input" type="text" placeholder="選択肢 3（任意）" id="amida-choice-3" maxlength="30">
+          <input class="amida-input" type="text" placeholder="選択肢 4（任意）" id="amida-choice-4" maxlength="30">
+        </div>
+        <div class="amida-actions">
+          <button class="btn btn-primary" onclick="runAmida()">🎲 転がしてみる</button>
+          <button class="btn btn-ghost" onclick="cancelAmida()">やめる</button>
+        </div>
+      </div>
+
+      <!-- 整理棚誘導エリア（高リスク判定時） -->
+      <div class="amida-panel hidden" id="amida-sorting-panel">
+        <div class="amida-panel-header">🗂 迷ったら整理棚</div>
+        <div class="amida-panel-body" id="amida-sorting-body">
+          <!-- JSで動的に追加 -->
+        </div>
+        <div class="amida-actions">
+          <button class="btn btn-ghost" onclick="cancelAmida()">戻る</button>
+        </div>
       </div>
 
       <!-- 選択肢エリア -->

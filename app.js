@@ -57,6 +57,15 @@ function createMessage(role, text, meta) {
   };
 }
 
+// ===== おばちゃんアクション定義（Ver.0.3-C）=====
+// 非常口ボタン（おばちゃんを呼ぶ）用
+const OBASAN_ACTIONS = [
+  { id: 'wait_reply',   label: 'ちょっと待って！' },
+  { id: 'change_topic', label: '話題をちょっと変える' },
+  { id: 'obasan_join',  label: 'おばちゃん、間に入って' },
+  { id: 'close_today',  label: '今日はここまでにする' }
+];
+
 // ===== 画面遷移状態 =====
 const state = {
   history: [],
@@ -73,6 +82,38 @@ const state = {
   roomCalledObasan: false,
   // ふりかえり
   reviewAnswers: {}
+};
+
+// ===== おばちゃんヘルパーアクション定義（Ver.0.4-A）=====
+// 通常メニュー（迷ったら整理棚）用
+const OBASAN_HELP_ACTIONS = [
+  { id: 'sort_choice',   label: '迷ったら整理してもらう' },
+  { id: 'light_lottery', label: '軽いくじで決める' },
+  { id: 'safety_check',  label: '安全だけ確認する' }
+];
+
+// ===== ルーム状態（Ver.0.4-A）=====
+let room = {
+  mode: 'normal'  // 'normal' | 'decompressing' | 'waiting_reply' | 'choice_sorting' | 'choice_lottery' | 'closing'
+};
+
+let uiState = {
+  obasan: {
+    summoned: false,
+    mode: 'idle',       // 'idle' | 'decompressing' | 'helper'
+    selectedAction: null,
+    helperMode: null    // null | 'sorting' | 'lottery'
+  }
+};
+
+// ===== あみだデータモデル（Ver.0.4-A）=====
+let lotteryChoice = {
+  id: null,
+  title: 'どれにしようかな',
+  choices: [],
+  riskLevel: 'low',
+  allowedForLottery: true,
+  result: null
 };
 
 // ===== 仮想相手プリセット =====
@@ -488,6 +529,12 @@ function startVirtualRoom() {
   state.roomFirstMessageSent = false;
   state.roomCalledObasan = false;
 
+  // room / uiState 初期化（Ver.0.3-C）
+  room.mode = 'normal';
+  uiState.obasan.summoned = false;
+  uiState.obasan.mode = 'idle';
+  uiState.obasan.selectedAction = null;
+
   // 画面移動
   goTo('screen-room');
 
@@ -498,6 +545,12 @@ function startVirtualRoom() {
   if (choiceList) { choiceList.innerHTML = ''; choiceList.classList.add('hidden'); }
   const endArea = document.getElementById('room-end-area');
   if (endArea) endArea.classList.add('hidden');
+  // お茶タイムバナーリセット
+  const teaBanner = document.getElementById('tea-time-banner');
+  if (teaBanner) teaBanner.classList.add('hidden');
+  // 状態バーのモードクラスリセット
+  const statusBar = document.getElementById('room-status-bar');
+  if (statusBar) statusBar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
 
   // ルーム情報バー更新
   updateRoomInfoBar();
@@ -602,6 +655,14 @@ function addMessage(type, text, delay) {
 function updateStatusBar(text) {
   const el = document.getElementById('room-status-text');
   if (el) el.textContent = text;
+  // 状態バーのモードクラスを切り替え
+  const bar = document.getElementById('room-status-bar');
+  if (bar) {
+    bar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
+    if (room.mode === 'decompressing') bar.classList.add('mode-decompressing');
+    else if (room.mode === 'waiting_reply') bar.classList.add('mode-waiting');
+    else if (room.mode === 'closing') bar.classList.add('mode-closing');
+  }
 }
 
 // ----- UI表示切り替え（クラスのみで制御） -----
@@ -635,9 +696,11 @@ function showChoices(choices) {
   list.innerHTML = '';
   list.classList.remove('hidden');
 
-  choices.forEach(choice => {
+  choices.forEach((choice, idx) => {
     const btn = document.createElement('button');
-    btn.className = 'room-choice-btn';
+    // OBASAN_ACTIONSの4択の場合、最後の「今日はここまで」は控えめの色
+    const isLastGhost = (choices.length === 4 && idx === 3);
+    btn.className = 'room-choice-btn' + (isLastGhost ? ' btn-ghost-choice' : '');
     btn.textContent = choice.label;
     btn.onclick = () => {
       list.classList.add('hidden');
@@ -682,10 +745,16 @@ function sendMyMessage() {
   }
 }
 
-// ----- おばちゃんを呼ぶ -----
+// ----- おばちゃんを呼ぶ（Ver.0.3-C）-----
 function callObasan() {
   if (state.roomCalledObasan) return;
   state.roomCalledObasan = true;
+
+  // room.mode と uiState を更新
+  room.mode = 'decompressing';
+  uiState.obasan.summoned = true;
+  uiState.obasan.mode = 'decompressing';
+  uiState.obasan.selectedAction = null;
 
   const callBtn = document.getElementById('call-obasan-btn');
   if (callBtn) callBtn.disabled = true;
@@ -693,64 +762,376 @@ function callObasan() {
   const inputArea = document.getElementById('room-input-area');
   if (inputArea) inputArea.classList.add('hidden');
 
-  updateStatusBar('おばちゃんが戻ってきました');
+  updateStatusBar('🛟 おばちゃん介入中：会話の流れをゆるめています');
+
+  // 初動メッセージ（仕様通り）
+  addMessage('obasan',
+    '呼んでくれてありがとうな。\nちょっとここでお茶でも飲んで、流れをゆるめよか。\n\n今すぐ言葉を探さなくて大丈夫。\nまずは落ち着いてな。\n\nこの中から、今いちばん近いやつを選んでみて。',
+    400,
+    { systemGenerated: true, interventionType: 'summoned', boundaryFlag: null, relatedToMessageId: null }
+  ).then(() => {
+    // OBASAN_ACTIONSから4択を生成
+    showChoices(OBASAN_ACTIONS.map(a => ({
+      label: a.label,
+      action: () => handleObasanAction(a.id)
+    })));
+  });
+}
+
+// ----- おばちゃんアクション処理（Ver.0.3-C）-----
+function handleObasanAction(actionId) {
+  const callBtn = document.getElementById('call-obasan-btn');
+  const inputArea = document.getElementById('room-input-area');
+
+  uiState.obasan.selectedAction = actionId;
+
+  if (actionId === 'wait_reply') {
+    // ちょっと待って！
+    room.mode = 'waiting_reply';
+    updateStatusBar('🍵 お茶タイム中：言葉を選ぶ時間を取っています');
+
+    addMessage('obasan',
+      'ちょっとストップな。\n今、じっくり言葉を選んでるところやから、少しだけ待ったげてな。\n\n急がんでええよ。\n焦らずいこか🍵',
+      300,
+      { systemGenerated: true, interventionType: 'wait_reply', boundaryFlag: null, relatedToMessageId: null }
+    ).then(() => {
+      // お茶タイムバナーを表示
+      const teaBanner = document.getElementById('tea-time-banner');
+      if (teaBanner) teaBanner.classList.remove('hidden');
+      // 入力欄を再表示（言葉を選ぶ時間を与える）
+      if (inputArea) inputArea.classList.remove('hidden');
+      // おばちゃんボタンを再有効化
+      state.roomCalledObasan = false;
+      if (callBtn) callBtn.disabled = false;
+      const container = document.getElementById('chat-container');
+      if (container) container.scrollTop = container.scrollHeight;
+    });
+
+  } else if (actionId === 'change_topic') {
+    // 話題をちょっと変える
+    room.mode = 'normal';
+    updateStatusBar('おばちゃんが場を整えています…');
+
+    addMessage('obasan',
+      'ちょっと空気変えよか。\nおばちゃんが軽いお題を置いとくね。\n\n最近食べた美味しいものとか、最近見たものくらいからでええよ。',
+      300,
+      { systemGenerated: true, interventionType: 'change_topic', boundaryFlag: null, relatedToMessageId: null }
+    ).then(() => {
+      state.roomCalledObasan = false;
+      if (callBtn) callBtn.disabled = false;
+      if (inputArea) inputArea.classList.remove('hidden');
+      uiState.obasan.mode = 'idle';
+      const container = document.getElementById('chat-container');
+      if (container) container.scrollTop = container.scrollHeight;
+    });
+
+  } else if (actionId === 'obasan_join') {
+    // おばちゃん、間に入って
+    room.mode = 'decompressing';
+    uiState.obasan.mode = 'decompressing';
+    updateStatusBar('🛟 おばちゃん介入中：会話の流れをゆるめています');
+
+    addMessage('obasan',
+      '了解や。\nここから少し、おばちゃんも一緒におるね。\n\n二人のトリセツを見ながら、ちょうどええ距離感で話せるように、間を持つわ。',
+      300,
+      { systemGenerated: true, interventionType: 'obasan_join', boundaryFlag: null, relatedToMessageId: null }
+    ).then(() => {
+      state.roomCalledObasan = false;
+      if (callBtn) callBtn.disabled = false;
+      if (inputArea) inputArea.classList.remove('hidden');
+      const container = document.getElementById('chat-container');
+      if (container) container.scrollTop = container.scrollHeight;
+    });
+
+  } else if (actionId === 'close_today') {
+    // 今日はここまでにする
+    room.mode = 'closing';
+    uiState.obasan.selectedAction = 'close_today';
+    updateStatusBar('今日はここまで');
+
+    addMessage('obasan',
+      'よし、今日のおしゃべりはここまでにしよか。\n二人ともお疲れさん。\n\n目的やノリがちょっと違っただけやから、誰も悪うないで。\nおばちゃんがこの部屋、やわらかく閉じておくね。\n\nこのあと、ふりかえり部屋で次回の作戦会議しよか。',
+      300,
+      { systemGenerated: true, interventionType: 'close_today', boundaryFlag: null, relatedToMessageId: null }
+    ).then(() => {
+      const callWrap = document.getElementById('call-obasan-wrap');
+      if (callWrap) callWrap.classList.add('hidden');
+      if (inputArea) inputArea.classList.add('hidden');
+      const endArea = document.getElementById('room-end-area');
+      if (endArea) endArea.classList.remove('hidden');
+      const container = document.getElementById('chat-container');
+      if (container) container.scrollTop = container.scrollHeight;
+    });
+  }
+}
+
+// ============================================================
+// 迷ったら整理棚 ・ おばちゃんあみだ（Ver.0.4-A）
+// ============================================================
+
+// ----- ヘルパーメニュー開閉 -----
+function toggleHelperMenu() {
+  const panel = document.getElementById('helper-menu-panel');
+  if (!panel) return;
+  if (panel.classList.contains('hidden')) {
+    panel.classList.remove('hidden');
+  } else {
+    panel.classList.add('hidden');
+  }
+}
+
+function closeHelperMenu() {
+  const panel = document.getElementById('helper-menu-panel');
+  if (panel) panel.classList.add('hidden');
+}
+
+// ----- あみだ全パネルを隐す -----
+function hideAllAmidaPanels() {
+  ['amida-risk-check', 'amida-input-panel', 'amida-sorting-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+}
+
+// ----- ヘルパーアクション開始 -----
+function startHelperAction(actionId) {
+  closeHelperMenu();
+
+  if (actionId === 'light_lottery') {
+    // おばちゃんあみだ：低リスク確認画面へ
+    showRiskCheck();
+
+  } else if (actionId === 'sort_choice') {
+    // 迷ったら整理してもらう
+    room.mode = 'choice_sorting';
+    uiState.obasan.mode = 'helper';
+    uiState.obasan.helperMode = 'sorting';
+    updateStatusBar('🗂 整理棚で並べています…');
+    addMessage('obasan',
+      '迷ってることを一緒に並べてみよか。\n\n何に迷ってるか、チャットに書いてみてな。\nおばちゃんが一緒に考えるわ。',
+      300,
+      { systemGenerated: true, interventionType: 'sort_choice' }
+    );
+
+  } else if (actionId === 'safety_check') {
+    // 安全確認
+    room.mode = 'choice_sorting';
+    uiState.obasan.mode = 'helper';
+    uiState.obasan.helperMode = 'sorting';
+    updateStatusBar('🛡 安全確認中…');
+    addMessage('obasan',
+      '安全の確認やな。\n\n今、相手から何か気になることはある？\n答えたくないことは答えなくていいし、\n媳なことがあればすぐ言ってな。',
+      300,
+      { systemGenerated: true, interventionType: 'safety_check' }
+    );
+  }
+}
+
+// ----- 低リスク確認画面表示 -----
+function showRiskCheck() {
+  hideAllAmidaPanels();
+  const panel = document.getElementById('amida-risk-check');
+  const body  = document.getElementById('amida-risk-check-body');
+  if (!panel || !body) return;
+
+  body.innerHTML = '';
+
+  // おばちゃんメッセージ
+  const msgEl = document.createElement('div');
+  msgEl.className = 'amida-obasan-msg';
+  msgEl.innerHTML = `
+    <span class="amida-obasan-icon">👵🏻</span>
+    <div class="amida-obasan-text">
+      お、あみだくじ引く？<br><br>
+      でも、引く前にこれだけ確認させてな。<br><br>
+      今から決めることって、<br>
+      どっちになっても大きな問題はない、軽い迷いで合ってる？<br><br>
+      安全、お金、個人情報、性的なこと、付き合うかどうか、断るかどうか。<br>
+      そういう大事なことは、くじで決めたらあかんで。
+    </div>
+  `;
+  body.appendChild(msgEl);
+
+  // ボタンエリア
+  const btnArea = document.createElement('div');
+  btnArea.className = 'amida-risk-buttons';
+  btnArea.innerHTML = `
+    <button class="amida-btn-ok" onclick="onRiskCheckOk()">🟢 うん、軽い迷い！</button>
+    <button class="amida-btn-ng" onclick="onRiskCheckNg()">🚨 ちょっと真剣な迷いかも</button>
+  `;
+  body.appendChild(btnArea);
+
+  panel.classList.remove('hidden');
+}
+
+// ----- 低リスク OK -----
+function onRiskCheckOk() {
+  hideAllAmidaPanels();
+  lotteryChoice = {
+    id: 'lottery_' + Date.now(),
+    title: 'どれにしようかな',
+    choices: [],
+    riskLevel: 'low',
+    allowedForLottery: true,
+    result: null
+  };
+  room.mode = 'choice_lottery';
+  uiState.obasan.mode = 'helper';
+  uiState.obasan.helperMode = 'lottery';
+  updateStatusBar('🎲 おばちゃんあみだ中…');
+
+  // おばちゃんメッセージをチャットに追加
+  addMessage('obasan',
+    'よし、ほな軽く転がしてみよか。\n迷ってる選択肢を2つから4つ入れてな。',
+    300,
+    { systemGenerated: true, interventionType: 'lottery_start' }
+  ).then(() => {
+    const inputPanel = document.getElementById('amida-input-panel');
+    if (inputPanel) {
+      // 入力欄をリセット
+      ['amida-choice-1','amida-choice-2','amida-choice-3','amida-choice-4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      inputPanel.classList.remove('hidden');
+    }
+    const container = document.getElementById('chat-container');
+    if (container) container.scrollTop = container.scrollHeight;
+  });
+}
+
+// ----- 低リスク NG（高リスク判定） -----
+function onRiskCheckNg() {
+  hideAllAmidaPanels();
+  lotteryChoice.riskLevel = 'high';
+  lotteryChoice.allowedForLottery = false;
+  room.mode = 'choice_sorting';
+  uiState.obasan.mode = 'helper';
+  uiState.obasan.helperMode = 'sorting';
+  updateStatusBar('🗂 整理棚で並べています…');
+
+  // 整理棚誘導パネルを表示
+  const sortingPanel = document.getElementById('amida-sorting-panel');
+  const sortingBody  = document.getElementById('amida-sorting-body');
+  if (sortingBody) {
+    sortingBody.innerHTML = `
+      <div class="amida-obasan-msg">
+        <span class="amida-obasan-icon">👵🏻</span>
+        <div class="amida-obasan-text">
+          立ち止まれてえらい。<br><br>
+          これはくじで決める話やないかもしれんな。<br><br>
+          いったんあみだはしまって、<br>
+          迷ったら整理棚で、何に迷ってるか一緒に並べよか。
+        </div>
+      </div>
+    `;
+  }
+  if (sortingPanel) sortingPanel.classList.remove('hidden');
 
   addMessage('obasan',
-    '呼んでくれてありがとう。\n今どんな感じやろか。\n話題を変える？\nそれとも、このまま少し見守ろか？',
-    400
-  ).then(() => {
-    showChoices([
-      {
-        label: '話題を変える',
-        action: () => {
-          const okTopics = roomBoundary.sharedOkTopics;
-          const suggestion = okTopics.length > 0 ? okTopics[0] : '日常のこと';
-          addMessage('obasan',
-            `ほな、${suggestion}の話から始めてみよか。\n重たい話はまだええからな。`,
-            300
-          ).then(() => {
-            state.roomCalledObasan = false;
-            if (callBtn) callBtn.disabled = false;
-            setRoomUIState(false);
-          });
-        }
-      },
-      {
-        label: '今日はここまでにする',
-        action: () => {
-          addMessage('obasan',
-            '今日はここまでで大丈夫。\n無理に続けることはありません。\nふりかえりをしてみよか？',
-            300
-          ).then(() => {
-            updateStatusBar('今日はここまで');
-            const callWrap = document.getElementById('call-obasan-wrap');
-            if (callWrap) callWrap.classList.add('hidden');
-            if (inputArea) inputArea.classList.add('hidden');
-            const endArea = document.getElementById('room-end-area');
-            if (endArea) endArea.classList.remove('hidden');
-            const container = document.getElementById('chat-container');
-            if (container) container.scrollTop = container.scrollHeight;
-          });
-        }
-      },
-      {
-        label: 'もう少しだけ見守ってもらう',
-        action: () => {
-          addMessage('obasan',
-            'わかった。おばちゃん、もう少しここにおるわ。\n焦らんでええからな。',
-            300
-          ).then(() => {
-            state.roomCalledObasan = false;
-            if (callBtn) callBtn.disabled = false;
-            if (inputArea) inputArea.classList.remove('hidden');
-            updateStatusBar('おばちゃん、見守っています');
-            const container = document.getElementById('chat-container');
-            if (container) container.scrollTop = container.scrollHeight;
-          });
-        }
-      }
-    ]);
+    '立ち止まれてえらい。\nこれはくじで決めるには、ちょっと重いかもしれんな。\n安全や気持ちに関わることは、いったん整理して考えよか。',
+    300,
+    { systemGenerated: true, interventionType: 'lottery_blocked' }
+  );
+}
+
+// ----- あみだ実行 -----
+function runAmida() {
+  // 入力値を収集
+  const inputs = [
+    document.getElementById('amida-choice-1'),
+    document.getElementById('amida-choice-2'),
+    document.getElementById('amida-choice-3'),
+    document.getElementById('amida-choice-4')
+  ];
+  const choices = inputs
+    .map(el => el ? el.value.trim() : '')
+    .filter(v => v !== '');
+
+  if (choices.length < 2) {
+    alert('選択肢を2つ以上入れてな！');
+    return;
+  }
+
+  // canLotteryチェック
+  const canLottery = lotteryChoice.allowedForLottery && lotteryChoice.riskLevel === 'low';
+  if (!canLottery) {
+    addMessage('obasan',
+      'これはくじで決めるには、ちょっと重いかもしれんな。\n安全や気持ちに関わることは、いったん整理して考えよか。',
+      0,
+      { systemGenerated: true, interventionType: 'lottery_blocked' }
+    );
+    hideAllAmidaPanels();
+    return;
+  }
+
+  // 入力パネルを隐す
+  hideAllAmidaPanels();
+
+  // 選択肢をデータモデルに保存
+  lotteryChoice.choices = choices.map((label, i) => ({
+    id: String.fromCharCode(97 + i),  // 'a', 'b', 'c', 'd'
+    label: label
+  }));
+
+  // Math.random()でランダム選択
+  const result = lotteryChoice.choices[Math.floor(Math.random() * lotteryChoice.choices.length)];
+  lotteryChoice.result = result;
+
+  // 結果を role: 'obasan' のメッセージとして追加
+  const resultText = `あみだ完了や！\n\n結果は……「${result.label}」になったで。\n\nただし、これは最終決定やないからな。\n結果を見て「やっぱり違うかも」と思ったら、それも大事な本音やで。\n\n参考くらいにして、最後は自分で選んでええよ🍵`;
+
+  addMessage('obasan', resultText, 400, {
+    systemGenerated: true,
+    interventionType: 'choice_lottery_result',
+    decisionByAI: false,
+    randomSelected: true,
+    riskLevel: 'low',
+    userCanOverride: true
+  }).then(() => {
+    // やり直しボタンを選択肢リストに表示
+    const list = document.getElementById('room-choice-list');
+    if (list) {
+      list.innerHTML = '';
+      list.classList.remove('hidden');
+      const retryBtn = document.createElement('button');
+      retryBtn.className = 'room-choice-btn';
+      retryBtn.textContent = '🎲 やり直す';
+      retryBtn.onclick = () => {
+        list.classList.add('hidden');
+        list.innerHTML = '';
+        onRiskCheckOk();
+      };
+      const okBtn = document.createElement('button');
+      okBtn.className = 'room-choice-btn';
+      okBtn.textContent = 'この結果で進む';
+      okBtn.onclick = () => {
+        list.classList.add('hidden');
+        list.innerHTML = '';
+        room.mode = 'normal';
+        uiState.obasan.mode = 'idle';
+        uiState.obasan.helperMode = null;
+        updateStatusBar('あとはお二人で');
+        const container = document.getElementById('chat-container');
+        if (container) container.scrollTop = container.scrollHeight;
+      };
+      list.appendChild(retryBtn);
+      list.appendChild(okBtn);
+    }
+    const container = document.getElementById('chat-container');
+    if (container) container.scrollTop = container.scrollHeight;
   });
+}
+
+// ----- あみだキャンセル -----
+function cancelAmida() {
+  hideAllAmidaPanels();
+  room.mode = 'normal';
+  uiState.obasan.mode = 'idle';
+  uiState.obasan.helperMode = null;
+  updateStatusBar('あとはお二人で');
+  const container = document.getElementById('chat-container');
+  if (container) container.scrollTop = container.scrollHeight;
 }
 
 // ============================================================

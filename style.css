@@ -944,6 +944,9 @@ button:focus-visible {
 }
 
 /* ----- 選択肢リスト ----- */
+#screen-room .room-choice-list.hidden {
+  display: none !important;
+}
 .room-choice-list {
   display: flex;
   flex-direction: column;
@@ -1589,4 +1592,333 @@ button:focus-visible {
   color: var(--color-text-lt);
   text-align: center;
   margin-bottom: 12px;
+}
+
+/* ============================================================
+   Ver.0.3-C — おばちゃん非常口UI 追加スタイル
+   ============================================================ */
+
+/* ----- お茶タイムバナー ----- */
+.tea-time-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+  border: 1.5px solid #f0c040;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 16px 8px;
+  font-size: 0.82rem;
+  color: #7a5c00;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(240,192,64,0.18);
+  animation: teaFadeIn 0.4s ease;
+}
+
+.tea-time-banner.hidden {
+  display: none;
+}
+
+.tea-time-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.tea-time-text {
+  line-height: 1.4;
+}
+
+@keyframes teaFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----- 状態バー：モード別カラー ----- */
+.room-status-bar.mode-decompressing {
+  background: linear-gradient(90deg, #e8e0f5 0%, #d8cef0 100%);
+  border-color: #b39ddb;
+  color: #4a2f7a;
+}
+
+.room-status-bar.mode-waiting {
+  background: linear-gradient(90deg, #fff8e1 0%, #fff3cd 100%);
+  border-color: #f0c040;
+  color: #7a5c00;
+}
+
+.room-status-bar.mode-closing {
+  background: linear-gradient(90deg, #f5f5f5 0%, #eeeeee 100%);
+  border-color: #bdbdbd;
+  color: #555;
+}
+
+/* ----- 4択ボタン（OBASAN_ACTIONS）----- */
+.room-choice-btn {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--color-accent);
+  background: #fff;
+  color: var(--color-accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  line-height: 1.4;
+}
+
+.room-choice-btn:hover,
+.room-choice-btn:active {
+  background: var(--color-accent);
+  color: #fff;
+  transform: scale(0.98);
+}
+
+/* 「今日はここまでにする」は控えめな色 */
+.room-choice-btn.btn-ghost-choice {
+  border-color: var(--color-border);
+  color: var(--color-text-lt);
+}
+
+.room-choice-btn.btn-ghost-choice:hover,
+.room-choice-btn.btn-ghost-choice:active {
+  background: var(--color-beige-mid);
+  color: var(--color-text-mid);
+}
+
+/* ============================================================
+   Ver.0.4-A — 迷ったら整理棚 / おばちゃんあみだ
+   ============================================================ */
+
+/* ----- ヘルパーメニューボタン（整理棚） ----- */
+.helper-menu-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1.5px dashed var(--color-purple);
+  border-radius: 12px;
+  color: var(--color-accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+.helper-menu-btn:hover {
+  background: var(--color-purple-lt);
+  border-color: var(--color-accent);
+}
+
+/* ----- ヘルパーメニューパネル（整理棚ドロワー） ----- */
+.helper-menu-panel {
+  background: #fff;
+  border: 1.5px solid var(--color-purple);
+  border-radius: 16px;
+  margin: 0 12px 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(140,100,200,0.10);
+}
+.helper-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  background: linear-gradient(90deg, var(--color-purple-lt) 0%, #fff 100%);
+  border-bottom: 1px solid var(--color-border);
+}
+.helper-menu-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-accent-dk);
+}
+.helper-menu-close {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--color-text-lt);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.helper-menu-close:hover { background: var(--color-purple-lt); }
+
+.helper-menu-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ----- 整理棚メニューアイテム ----- */
+.helper-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--color-text);
+  transition: background 0.15s, border-color 0.15s;
+  text-align: left;
+  width: 100%;
+}
+.helper-menu-item:hover {
+  background: var(--color-purple-lt);
+  border-color: var(--color-purple);
+}
+.helper-item-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.helper-item-text {
+  font-weight: 600;
+  color: var(--color-text-mid);
+}
+
+/* あみだボタン（目立つ） */
+.helper-menu-item-lottery {
+  background: linear-gradient(135deg, var(--color-purple-lt) 0%, var(--color-beige) 100%);
+  border-color: var(--color-purple);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.helper-menu-item-lottery:hover {
+  background: var(--color-purple-lt);
+}
+.helper-item-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent-dk);
+}
+.helper-item-sublabel {
+  font-size: 0.78rem;
+  color: var(--color-text-lt);
+}
+
+/* ----- あみだパネル共通 ----- */
+.amida-panel {
+  background: #fff;
+  border: 1.5px solid var(--color-purple);
+  border-radius: 16px;
+  margin: 0 12px 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(140,100,200,0.12);
+}
+.amida-panel-header {
+  padding: 12px 16px 10px;
+  background: linear-gradient(90deg, var(--color-purple-lt) 0%, var(--color-beige) 100%);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-accent-dk);
+  border-bottom: 1px solid var(--color-border);
+}
+.amida-panel-body {
+  padding: 12px;
+}
+
+/* ----- おばちゃんメッセージ（パネル内） ----- */
+.amida-obasan-msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0 8px;
+}
+.amida-obasan-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.amida-obasan-text {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--color-text-mid);
+  background: var(--color-purple-lt);
+  border-radius: 12px;
+  padding: 10px 14px;
+  flex: 1;
+}
+
+/* ----- リスク確認ボタン ----- */
+.amida-risk-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 4px;
+}
+.amida-btn-ok {
+  padding: 13px 16px;
+  background: var(--color-green-lt);
+  border: 1.5px solid var(--color-green);
+  border-radius: 12px;
+  color: #2e6e3e;
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.amida-btn-ok:hover { background: var(--color-green); }
+.amida-btn-ng {
+  padding: 13px 16px;
+  background: #fff3f3;
+  border: 1.5px solid var(--color-danger);
+  border-radius: 12px;
+  color: var(--color-danger);
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.amida-btn-ng:hover { background: #ffe0e0; }
+
+/* ----- 選択肢入力パネル ----- */
+.amida-note {
+  font-size: 0.78rem;
+  color: var(--color-danger);
+  background: #fff3f3;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 12px 4px;
+  border: 1px solid #f0c0c0;
+}
+.amida-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 4px;
+}
+.amida-input {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.amida-input:focus {
+  border-color: var(--color-purple);
+  background: #fff;
+}
+.amida-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px 12px;
+}
+.amida-actions .btn {
+  flex: 1;
 }
