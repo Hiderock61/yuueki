@@ -80,6 +80,8 @@ const state = {
   roomMessages: [],
   roomFirstMessageSent: false,
   roomCalledObasan: false,
+  // iPhone日本語入力の下書き保持
+  roomDraftMessage: '',
   // ふりかえり
   reviewAnswers: {}
 };
@@ -678,6 +680,7 @@ function startVirtualRoom() {
 
   // テキストエリアリセット
   const textarea = document.getElementById('room-input-textarea');
+  state.roomDraftMessage = '';
   if (textarea) textarea.value = '';
 
   // ヘッダータイトル
@@ -866,7 +869,9 @@ function showChoices(choices) {
 function sendMyMessage() {
   const textarea = document.getElementById('room-input-textarea');
   if (!textarea) return;
-  const text = textarea.value.trim();
+  // iPhone日本語入力対策：DOMの値が一時的に空でも、下書きstateを保険として使う
+  const rawValue = textarea.value || state.roomDraftMessage || '';
+  const text = rawValue.trim();
   if (!text) return;
 
   // NGワードチェック
@@ -882,6 +887,7 @@ function sendMyMessage() {
 
   // メッセージ追加成功後だけ入力欄を空にする
   addMessage('user', text, 0);
+  state.roomDraftMessage = '';
   textarea.value = '';
 
   // 初回送信時のみ相手のモック返信
@@ -1664,6 +1670,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     textarea.addEventListener('compositionend', () => {
       isComposing = false;
+      state.roomDraftMessage = textarea.value || '';
+    });
+
+    // 入力中の文字を常に下書きとして保持する
+    textarea.addEventListener('input', () => {
+      state.roomDraftMessage = textarea.value || '';
     });
 
     // Enterキー処理：変換中またはスマホでは送信しない
@@ -1684,6 +1696,28 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         sendMyMessage();
       }
+    });
+
+    // ============================================================
+    // キーボード表示時の画面整理（iPhone向け）
+    // focus時：body.keyboard-activeを付与→CSSでボタン群を非表示
+    // blur時：body.keyboard-activeを除去→ボタン群を復元
+    // ============================================================
+    textarea.addEventListener('focus', () => {
+      document.body.classList.add('keyboard-active');
+      // iPhoneで入力欄が再描画や変換確定で空になった場合、下書きから復元する
+      if (!textarea.value && state.roomDraftMessage) {
+        textarea.value = state.roomDraftMessage;
+      }
+    });
+
+    textarea.addEventListener('blur', () => {
+      // 送信していない文字は消さず、下書きとして保持する
+      state.roomDraftMessage = textarea.value || state.roomDraftMessage || '';
+      // 少し遅延して解除（送信ボタンタップ時にボタンが非表示になるのを防ぐ）
+      setTimeout(() => {
+        document.body.classList.remove('keyboard-active');
+      }, 200);
     });
   }
 
