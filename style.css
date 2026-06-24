@@ -2276,3 +2276,474 @@ button:focus-visible {
 .tea-time-banner {
   display: none !important;
 }
+
+
+/* ============================================================
+   Ver.0.6-A — 待合室 / おばちゃん紹介カード / 相手確認中
+   iPhone優先レイアウト
+   ============================================================ */
+
+/* ===== 待合室 ===== */
+
+.waiting-room-obasan {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 16px 8px;
+}
+
+.waiting-room-obasan .obasan-face {
+  font-size: 2.6rem;
+  flex-shrink: 0;
+}
+
+.waiting-room-obasan .speech-bubble {
+  padding: 14px 16px;
+  font-size: 0.9rem;
+}
+
+.waiting-room-body {
+  padding: 0 16px 120px;
+  overflow-y: auto;
+}
+
+.wr-section {
+  margin-top: 20px;
+}
+
+.wr-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b4f3a;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+/* 目的ボタン：縦並び・大きめ */
+.wr-purpose-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wr-purpose-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: #fff;
+  border: 2px solid #e0d5c8;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #3d2b1f;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  line-height: 1.4;
+  font-family: var(--font-main);
+}
+
+.wr-purpose-btn:active,
+.wr-purpose-btn.selected {
+  border-color: #8b5e3c;
+  background: #fdf5ec;
+  color: #5c3a1e;
+}
+
+/* タグ（OK/NG話題・時間・写真）：横並びwrap */
+.wr-tag-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wr-tag {
+  padding: 8px 14px;
+  background: #fff;
+  border: 1.5px solid #d4c4b0;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a3728;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: var(--font-main);
+}
+
+.wr-tag:active,
+.wr-tag.selected {
+  border-color: #8b5e3c;
+  background: #fdf5ec;
+  color: #5c3a1e;
+  font-weight: 700;
+}
+
+.wr-tag--ng {
+  border-color: #e8c5c5;
+  color: #7a3535;
+}
+
+.wr-tag--ng:active,
+.wr-tag--ng.selected {
+  border-color: #c0392b;
+  background: #fdf0f0;
+  color: #7a3535;
+}
+
+/* 候補を探すボタンエリア：画面下部スティッキー */
+.wr-search-wrap {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, #faf8f4 80%, transparent);
+  padding: 12px 16px 20px;
+  text-align: center;
+}
+
+.wr-search-btn {
+  width: 100%;
+  font-size: 16px;
+  padding: 16px;
+}
+
+.wr-search-note {
+  font-size: 12px;
+  color: #9e8878;
+  margin-top: 6px;
+}
+
+/* ===== おばちゃん紹介カード ===== */
+
+.intro-obasan {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 16px 8px;
+}
+
+.intro-obasan .obasan-face {
+  font-size: 2.6rem;
+  flex-shrink: 0;
+}
+
+.intro-obasan .speech-bubble {
+  padding: 12px 14px;
+  font-size: 0.88rem;
+}
+
+.intro-profile-card {
+  padding: 0 16px;
+}
+
+.intro-card-inner {
+  background: #fff;
+  border: 1.5px solid #e0d5c8;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* アバター行：小さめアイコン＋名前 */
+.intro-card-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.intro-card-avatar {
+  width: 44px;
+  height: 44px;
+  background: #f5ede4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  border: 1.5px solid #e0d5c8;
+}
+
+.intro-card-avatar-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.intro-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #3d2b1f;
+  margin-bottom: 2px;
+}
+
+.intro-card-photo-status {
+  font-size: 12px;
+  color: #9e8878;
+}
+
+/* 今日の目的：大きく目立たせる */
+.intro-card-purpose-row {
+  background: #fdf5ec;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.intro-card-purpose-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5e3c;
+  white-space: nowrap;
+}
+
+.intro-card-purpose-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #3d2b1f;
+}
+
+/* OK/NG話題 */
+.intro-card-topics-row {
+  margin-bottom: 10px;
+}
+
+.intro-card-topics-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b8c5a;
+  margin-bottom: 5px;
+}
+
+.intro-card-topics-label--ng {
+  color: #b05050;
+}
+
+.intro-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.intro-tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.intro-tag--ok {
+  background: #edf5e8;
+  color: #4a7a3a;
+  border: 1px solid #c5ddb8;
+}
+
+.intro-tag--ng {
+  background: #fdf0f0;
+  color: #8b3535;
+  border: 1px solid #e8c5c5;
+}
+
+/* 会話温度・話せる時間 */
+.intro-card-temp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.intro-card-temp-label,
+.intro-card-avail-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b5e3c;
+}
+
+.intro-card-temp-value,
+.intro-card-avail-value {
+  font-size: 13px;
+  color: #3d2b1f;
+  background: #f5ede4;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+/* おばちゃんメモ：吹き出し風 */
+.intro-card-memo {
+  background: #fffbf0;
+  border: 1.5px solid #f0e0b0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.intro-card-memo-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b6a20;
+  margin-bottom: 5px;
+}
+
+.intro-card-memo-text {
+  font-size: 13px;
+  color: #5c4a20;
+  line-height: 1.6;
+}
+
+/* アクションボタン：縦並び */
+.intro-actions {
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intro-btn--enter {
+  font-size: 16px;
+  padding: 15px;
+}
+
+/* 見送りメッセージ */
+.intro-pass-msg {
+  padding: 16px;
+}
+
+.intro-pass-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fdf5ec;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.intro-pass-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.intro-pass-text {
+  font-size: 14px;
+  color: #4a3728;
+  line-height: 1.7;
+}
+
+.intro-pass-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== 相手確認中 ===== */
+
+.match-waiting-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 32px;
+  text-align: center;
+}
+
+.match-waiting-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  animation: match-pulse 2s ease-in-out infinite;
+}
+
+@keyframes match-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.08); opacity: 0.85; }
+}
+
+.match-waiting-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #3d2b1f;
+  margin-bottom: 12px;
+}
+
+.match-waiting-desc {
+  font-size: 14px;
+  color: #6b4f3a;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+
+.match-waiting-sub {
+  font-size: 13px;
+  color: #9e8878;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* 最初の一言パネル */
+.match-first-word {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e0d5c8;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.match-first-word-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b5e3c;
+  margin-bottom: 10px;
+}
+
+.match-first-word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.match-word-btn {
+  width: 100%;
+  padding: 11px 14px;
+  background: #faf8f4;
+  border: 1.5px solid #d4c4b0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #3d2b1f;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: var(--font-main);
+}
+
+.match-word-btn:active,
+.match-word-btn.selected {
+  border-color: #8b5e3c;
+  background: #fdf5ec;
+  font-weight: 600;
+}
+
+.match-word-note {
+  font-size: 11px;
+  color: #9e8878;
+  margin-top: 8px;
+}
+
+/* 待機中アクションボタン */
+.match-waiting-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.match-wait-more-msg {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fdf5ec;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #6b4f3a;
+  text-align: center;
+  width: 100%;
+}
