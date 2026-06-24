@@ -151,6 +151,35 @@ const CHARACTER_MESSAGES = {
   }
 };
 
+// ===== Room Status Bar コピー（Ver.0.5-B）=====
+const ISSUE_STATUS_COPY = {
+  waiting_reply: {
+    label: '🍵 お茶タイム中',
+    description: '今は、言葉を選んでいる時間です。急いで返事しなくて大丈夫です。',
+    peerVisibleText: '少し思案中です。返信は急がなくてOKです。'
+  },
+  awkward: {
+    label: '👵🏻 間を持っています',
+    description: '会話の沈黙や気まずさを、おばちゃんが少し預かっています。無理に話さなくて大丈夫です。',
+    peerVisibleText: '今は少しリラックス中です。のんびりいきましょう。'
+  },
+  purpose: {
+    label: '📄 目的整理中',
+    description: '目的のズレを調整中です。どちらの目的が正しいかを決める時間ではありません。',
+    peerVisibleText: 'お互いの目的を再確認中です。期待値を合わせるためです。'
+  },
+  safety_check: {
+    label: '🦺 安全確認中',
+    description: '安全な距離感を確認中です。誰かを責めるためではありません。',
+    peerVisibleText: '安全な距離感の確認中です。双方が心地よく過ごすための確認です。'
+  },
+  close_today: {
+    label: '🚪 終了準備中',
+    description: '責めずに部屋を閉じる準備をしています。目的やノリが違っただけです。',
+    peerVisibleText: '今日はここまで。お互いに良い時間になりますように。'
+  }
+};
+
 // ===== おばちゃんヘルパーアクション定義（Ver.0.4-A）=====
 // 通常メニュー（迷ったら整理棚）用
 const OBASAN_HELP_ACTIONS = [
@@ -174,7 +203,8 @@ let uiState = {
   assistantTeam: {
     activeCharacterId: null,
     activeIssueType: null,
-    lastCharacterId: null
+    lastCharacterId: null,
+    statusVisible: false
   }
 };
 
@@ -610,6 +640,9 @@ function startVirtualRoom() {
   uiState.assistantTeam.activeCharacterId = null;
   uiState.assistantTeam.activeIssueType   = null;
   uiState.assistantTeam.lastCharacterId   = null;
+  uiState.assistantTeam.statusVisible     = false;
+  const statusCardEl = document.getElementById('assistant-status-card');
+  if (statusCardEl) { statusCardEl.classList.add('hidden'); statusCardEl.innerHTML = ''; }
 
   // 画面移動
   goTo('screen-room');
@@ -985,6 +1018,35 @@ function handleObasanAction(actionId) {
 // オノノケ縁側システム（Ver.0.5-A）
 // ============================================================
 
+// ----- 状態帯カードを描画する（Ver.0.5-B）-----
+function renderAssistantStatusCard() {
+  const card = document.getElementById('assistant-status-card');
+  if (!card) return;
+
+  if (!uiState.assistantTeam.statusVisible) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  const issueType = uiState.assistantTeam.activeIssueType;
+  const copy = ISSUE_STATUS_COPY[issueType];
+  if (!copy) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  card.setAttribute('data-issue', issueType);
+  card.innerHTML =
+    '<div class="status-card-label">' + escapeHtml(copy.label) + '</div>' +
+    '<div class="status-card-description">' + escapeHtml(copy.description) + '</div>' +
+    '<div class="status-card-peer-preview">' +
+      '<strong>相手側にはこう見えています：</strong>' +
+      '<span>' + escapeHtml(copy.peerVisibleText) + '</span>' +
+    '</div>';
+
+  card.classList.remove('hidden');
+}
+
 // ----- 状態ボタンクリック時のハンドラ -----
 function handleIssueButtonClick(issueType) {
   // 1. ISSUE_TO_CHARACTERで担当キャラを取得
@@ -1002,10 +1064,11 @@ function handleIssueButtonClick(issueType) {
     room.mode = 'character_assist';
   }
 
-  // 4. uiState.assistantTeamを更新
+  // 4. uiState.assistantTeamを更新（Ver.0.5-B: statusVisibleを追加）
   uiState.assistantTeam.activeIssueType    = issueType;
   uiState.assistantTeam.activeCharacterId  = assignedCharacterId;
   uiState.assistantTeam.lastCharacterId    = assignedCharacterId;
+  uiState.assistantTeam.statusVisible      = true;
 
   // 5. 状態ボタンパネルを閉じる
   const issuePanel = document.getElementById('issue-button-panel');
@@ -1022,6 +1085,9 @@ function handleIssueButtonClick(issueType) {
 
   const statusLabel = character.emoji + ' ' + character.name + 'が入りました';
   updateStatusBar(statusLabel);
+
+  // 8. 状態帯カードを描画（Ver.0.5-B）
+  renderAssistantStatusCard();
 
   addMessage('character', msgData.text, 300, {
     characterId: assignedCharacterId,
@@ -1258,7 +1324,7 @@ function runAmida() {
   lotteryChoice.result = result;
 
   // 結果を role: 'obasan' のメッセージとして追加
-  const resultText = `あみだ完了や！\n\n結果は……「${result.label}」になったで。\n\nただし、これは最終決定やないからな。\n結果を見て「やっぱり違うかも」と思ったら、それも大事な本音やで。\n\n参考くらいにして、最後は自分で選んでええよ🍵`;
+  const resultText = `あみだ完了や！\n\n結果は……「${result.label}」になったで。\n\nただし、これは最終決定やないからな。\n結果を見て「やっぱり違うかも」と思ったら、それも大事な本音やで。\n\n参考くらいにして、最後は自分で選んでええよ🏥`;
 
   addMessage('obasan', resultText, 400, {
     systemGenerated: true,

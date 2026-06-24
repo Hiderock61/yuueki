@@ -2100,3 +2100,71 @@ button:focus-visible {
   color: #2a6a2a;
   border: 1px solid #90c890;
 }
+
+/* ============================================================
+   Ver.0.5-B — Room Status Bar / 状態帯カード
+   ============================================================ */
+
+/* 状態帯カード本体 */
+.assistant-status-card {
+  margin: 0 12px 8px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fdf6ec 0%, #f5eef8 100%);
+  border: 1px solid #e8d8f0;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  flex-shrink: 0;
+}
+
+/* 状態ラベル（太字・やや大きめ） */
+.status-card-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #6b4c8a;
+  margin-bottom: 5px;
+  letter-spacing: 0.02em;
+}
+
+/* 自分側への説明文 */
+.status-card-description {
+  color: #5a4a6a;
+  margin-bottom: 8px;
+}
+
+/* 相手側プレビュー枠 */
+.status-card-peer-preview {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px dashed #c9b8e0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: #7a6a8a;
+  font-size: 0.78rem;
+}
+
+.status-card-peer-preview strong {
+  display: block;
+  font-size: 0.73rem;
+  color: #9a88aa;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.status-card-peer-preview span {
+  color: #6a5a7a;
+}
+
+/* issueType別のアクセントカラー（ラベルのみ色変え） */
+.assistant-status-card[data-issue="waiting_reply"] .status-card-label { color: #7a6a3a; }
+.assistant-status-card[data-issue="waiting_reply"] { background: linear-gradient(135deg, #fffbf0 0%, #fdf3d0 100%); border-color: #e8d8a0; }
+
+.assistant-status-card[data-issue="awkward"] .status-card-label { color: #6b4c8a; }
+
+.assistant-status-card[data-issue="purpose"] .status-card-label { color: #7a5a2a; }
+.assistant-status-card[data-issue="purpose"] { background: linear-gradient(135deg, #fffaf0 0%, #fdf0d8 100%); border-color: #e8d0a8; }
+
+.assistant-status-card[data-issue="safety_check"] .status-card-label { color: #3a6a4a; }
+.assistant-status-card[data-issue="safety_check"] { background: linear-gradient(135deg, #f0faf4 0%, #e8f5ec 100%); border-color: #b8dcc4; }
+
+.assistant-status-card[data-issue="close_today"] .status-card-label { color: #5a5a6a; }
+.assistant-status-card[data-issue="close_today"] { background: linear-gradient(135deg, #f8f8fa 0%, #f0f0f4 100%); border-color: #d0d0dc; }
