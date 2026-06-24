@@ -305,68 +305,7 @@
         <!-- JSで動的に追加 -->
       </div>
 
-      <!-- 今どうしたい？状態ボタン（Ver.0.5-A） -->
-      <div class="issue-button-panel hidden" id="issue-button-panel">
-        <div class="issue-panel-header">今どうしたい？</div>
-        <div class="issue-button-grid">
-          <button class="issue-btn issue-btn--obasan" onclick="handleIssueButtonClick('awkward')">
-            😳 気まずい / 沈黙
-          </button>
-          <button class="issue-btn issue-btn--obasan" onclick="handleIssueButtonClick('waiting_reply')">
-            ⏳ 返事を待ってもらいたい
-          </button>
-          <button class="issue-btn issue-btn--manual" onclick="handleIssueButtonClick('purpose')">
-            🔥 目的をはっきりさせたい
-          </button>
-          <button class="issue-btn issue-btn--safety" onclick="handleIssueButtonClick('safety_check')">
-            🦺 安全確認したい
-          </button>
-          <button class="issue-btn issue-btn--close" onclick="handleIssueButtonClick('close_today')">
-            🚪 今日はここまでにしたい
-          </button>
-        </div>
-        <!-- 準備中キャラエリア -->
-        <div class="issue-coming-soon">
-          <span class="coming-soon-label">準備中</span>
-          <span class="coming-soon-char">😎 ダモリさん</span>
-          <span class="coming-soon-char">🕺🏻 ノリ助</span>
-          <span class="coming-soon-char">🫨 ヒデロコ</span>
-        </div>
-      </div>
-
-      <!-- おばさんを呼ぶボタン（非常口） -->
-      <div class="call-obasan-wrap" id="call-obasan-wrap">
-        <button class="call-obasan-button" id="call-obasan-btn" onclick="callObasan()">
-          👵🏻 おばちゃんを呼ぶ
-        </button>
-        <!-- 通常メニューボタン -->
-        <button class="helper-menu-btn" id="helper-menu-btn" onclick="toggleHelperMenu()">
-          🎲 迷ったら整理棚
-        </button>
-      </div>
-
-      <!-- 通常ヘルパーメニュー（迷ったら整理棚） -->
-      <div class="helper-menu-panel hidden" id="helper-menu-panel">
-        <div class="helper-menu-header">
-          <span class="helper-menu-title">🗂 迷ったら整理棚</span>
-          <button class="helper-menu-close" onclick="closeHelperMenu()">✕</button>
-        </div>
-        <div class="helper-menu-body">
-          <button class="helper-menu-item" onclick="startHelperAction('sort_choice')">
-            <span class="helper-item-icon">🗂</span>
-            <span class="helper-item-text">迷ったら整理してもらう</span>
-          </button>
-          <button class="helper-menu-item helper-menu-item-lottery" onclick="startHelperAction('light_lottery')">
-            <span class="helper-item-icon">🎲</span>
-            <span class="helper-item-label">おばちゃんあみだ</span>
-            <span class="helper-item-sublabel">どれにしようかな</span>
-          </button>
-          <button class="helper-menu-item" onclick="startHelperAction('safety_check')">
-            <span class="helper-item-icon">🛡</span>
-            <span class="helper-item-text">安全だけ確認する</span>
-          </button>
-        </div>
-      </div>
+      <!-- TODO: 準備中キャラ（ダモリさん・ノリ助・ヒデロコ）は将来ここに復活予定 -->
 
       <!-- あみだ：低リスク確認パネル -->
       <div class="amida-panel hidden" id="amida-risk-check">
@@ -410,6 +349,7 @@
 
       <!-- 自分の入力欄 -->
       <div class="room-input-area" id="room-input-area">
+        <button class="help-trigger" type="button" onclick="toggleHelpMenu()">👵🏻 助け舟</button>
         <textarea
           class="room-input-textarea"
           id="room-input-textarea"
@@ -418,6 +358,9 @@
         ></textarea>
         <button class="room-send-btn" type="button" onclick="sendMyMessage()">送信</button>
       </div>
+
+      <!-- 助け舟ボトムシート（JSのrenderHelpMenu()で動的描画） -->
+      <div id="help-menu-root"></div>
 
       <!-- 終了エリア -->
       <div class="room-end-area" id="room-end-area">

@@ -80,7 +80,6 @@ const state = {
   roomMessages: [],
   roomFirstMessageSent: false,
   roomCalledObasan: false,
-  // iPhone日本語入力の下書き保持
   roomDraftMessage: '',
   // ふりかえり
   reviewAnswers: {}
@@ -206,7 +205,8 @@ let uiState = {
     activeCharacterId: null,
     activeIssueType: null,
     lastCharacterId: null,
-    statusVisible: false
+    statusVisible: false,
+    helpMenuOpen: false
   }
 };
 
@@ -632,6 +632,7 @@ function startVirtualRoom() {
   state.roomMessages = [];
   state.roomFirstMessageSent = false;
   state.roomCalledObasan = false;
+  state.roomDraftMessage = '';
 
   // room / uiState 初期化（Ver.0.3-C / Ver.0.5-A）
   room.mode = 'normal';
@@ -643,8 +644,12 @@ function startVirtualRoom() {
   uiState.assistantTeam.activeIssueType   = null;
   uiState.assistantTeam.lastCharacterId   = null;
   uiState.assistantTeam.statusVisible     = false;
+  uiState.assistantTeam.helpMenuOpen      = false;
   const statusCardEl = document.getElementById('assistant-status-card');
   if (statusCardEl) { statusCardEl.classList.add('hidden'); statusCardEl.innerHTML = ''; }
+  // help-menu-rootもリセット
+  const helpMenuRoot = document.getElementById('help-menu-root');
+  if (helpMenuRoot) helpMenuRoot.innerHTML = '';
 
   // 画面移動
   goTo('screen-room');
@@ -659,28 +664,19 @@ function startVirtualRoom() {
   // 状態バーのモードクラスリセット
   const statusBar = document.getElementById('room-status-bar');
   if (statusBar) statusBar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
-  // 状態ボタンパネルリセット（Ver.0.5-A）
-  const issuePanel = document.getElementById('issue-button-panel');
-  if (issuePanel) issuePanel.classList.add('hidden');
-  // ヘルパーメニューリセット
-  const helperPanel = document.getElementById('helper-menu-panel');
-  if (helperPanel) helperPanel.classList.add('hidden');
   // あみだパネルリセット
   hideAllAmidaPanels();
 
   // ルーム情報バー更新
   updateRoomInfoBar();
 
-  // 初期状態：おばちゃん在室中
-  const callWrap  = document.getElementById('call-obasan-wrap');
+  // 初期状態：入力欄を非表示（おばちゃんのウェルカムメッセージ完了待ち）
   const inputArea = document.getElementById('room-input-area');
-  if (callWrap)  callWrap.classList.add('hidden');
   if (inputArea) inputArea.classList.add('hidden');
   updateStatusBar('おばちゃんが場を整えています…');
 
   // テキストエリアリセット
   const textarea = document.getElementById('room-input-textarea');
-  state.roomDraftMessage = '';
   if (textarea) textarea.value = '';
 
   // ヘッダータイトル
@@ -817,27 +813,20 @@ function updateStatusBar(text) {
 function setRoomUIState(obasanIn) {
   state.obasanInRoom = obasanIn;
 
-  const callWrap    = document.getElementById('call-obasan-wrap');
   const inputArea   = document.getElementById('room-input-area');
   const choiceList  = document.getElementById('room-choice-list');
   const endArea     = document.getElementById('room-end-area');
-  const issuePanel  = document.getElementById('issue-button-panel');
 
   if (obasanIn) {
-    callWrap.classList.add('hidden');
-    inputArea.classList.add('hidden');
-    if (issuePanel) issuePanel.classList.add('hidden');
+    if (inputArea) inputArea.classList.add('hidden');
     updateStatusBar('おばちゃんが場を整えています');
   } else {
-    callWrap.classList.remove('hidden');
-    inputArea.classList.remove('hidden');
-    if (issuePanel) issuePanel.classList.remove('hidden');
+    if (inputArea) inputArea.classList.remove('hidden');
     updateStatusBar('あとはお二人で');
   }
 
-  choiceList.classList.add('hidden');
-  choiceList.innerHTML = '';
-  endArea.classList.add('hidden');
+  if (choiceList) { choiceList.classList.add('hidden'); choiceList.innerHTML = ''; }
+  if (endArea) endArea.classList.add('hidden');
 }
 
 // ----- 選択肢表示 -----
@@ -869,9 +858,7 @@ function showChoices(choices) {
 function sendMyMessage() {
   const textarea = document.getElementById('room-input-textarea');
   if (!textarea) return;
-  // iPhone日本語入力対策：DOMの値が一時的に空でも、下書きstateを保険として使う
-  const rawValue = textarea.value || state.roomDraftMessage || '';
-  const text = rawValue.trim();
+  const text = textarea.value.trim();
   if (!text) return;
 
   // NGワードチェック
@@ -887,8 +874,8 @@ function sendMyMessage() {
 
   // メッセージ追加成功後だけ入力欄を空にする
   addMessage('user', text, 0);
-  state.roomDraftMessage = '';
   textarea.value = '';
+  state.roomDraftMessage = '';
 
   // 初回送信時のみ相手のモック返信
   if (!state.roomFirstMessageSent) {
@@ -912,9 +899,6 @@ function callObasan() {
   uiState.obasan.mode = 'decompressing';
   uiState.obasan.selectedAction = null;
 
-  const callBtn = document.getElementById('call-obasan-btn');
-  if (callBtn) callBtn.disabled = true;
-
   const inputArea = document.getElementById('room-input-area');
   if (inputArea) inputArea.classList.add('hidden');
 
@@ -936,7 +920,6 @@ function callObasan() {
 
 // ----- おばちゃんアクション処理（Ver.0.3-C）-----
 function handleObasanAction(actionId) {
-  const callBtn = document.getElementById('call-obasan-btn');
   const inputArea = document.getElementById('room-input-area');
 
   uiState.obasan.selectedAction = actionId;
@@ -953,9 +936,7 @@ function handleObasanAction(actionId) {
     ).then(() => {
       // 入力欄を再表示（言葉を選ぶ時間を与える）
       if (inputArea) inputArea.classList.remove('hidden');
-      // おばちゃんボタンを再有効化
       state.roomCalledObasan = false;
-      if (callBtn) callBtn.disabled = false;
       const container = document.getElementById('chat-container');
       if (container) container.scrollTop = container.scrollHeight;
     });
@@ -971,7 +952,6 @@ function handleObasanAction(actionId) {
       { systemGenerated: true, interventionType: 'change_topic', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       state.roomCalledObasan = false;
-      if (callBtn) callBtn.disabled = false;
       if (inputArea) inputArea.classList.remove('hidden');
       uiState.obasan.mode = 'idle';
       const container = document.getElementById('chat-container');
@@ -990,7 +970,6 @@ function handleObasanAction(actionId) {
       { systemGenerated: true, interventionType: 'obasan_join', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       state.roomCalledObasan = false;
-      if (callBtn) callBtn.disabled = false;
       if (inputArea) inputArea.classList.remove('hidden');
       const container = document.getElementById('chat-container');
       if (container) container.scrollTop = container.scrollHeight;
@@ -1007,8 +986,6 @@ function handleObasanAction(actionId) {
       300,
       { systemGenerated: true, interventionType: 'close_today', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
-      const callWrap = document.getElementById('call-obasan-wrap');
-      if (callWrap) callWrap.classList.add('hidden');
       if (inputArea) inputArea.classList.add('hidden');
       const endArea = document.getElementById('room-end-area');
       if (endArea) endArea.classList.remove('hidden');
@@ -1027,14 +1004,8 @@ function renderAssistantStatusCard() {
   const card = document.getElementById('assistant-status-card');
   if (!card) return;
 
-  const issuePanel    = document.getElementById('issue-button-panel');
-  const callObasanWrap = document.getElementById('call-obasan-wrap');
-
   if (!uiState.assistantTeam.statusVisible) {
     card.classList.add('hidden');
-    // カード非表示時はボタン群を通常表示に戻す
-    if (issuePanel) issuePanel.classList.remove('collapsed');
-    if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
     return;
   }
 
@@ -1045,24 +1016,15 @@ function renderAssistantStatusCard() {
     return;
   }
 
+  // スリムバー形式：1行表示 + 解除ボタン
   card.setAttribute('data-issue', issueType);
+  card.className = 'assistant-status-bar';
   card.innerHTML =
-    '<div class="status-card-label">' + escapeHtml(copy.label) + '</div>' +
-    '<div class="status-card-description">' + escapeHtml(copy.description) + '</div>' +
-    '<div class="status-card-peer-preview">' +
-      '<strong>相手側にはこう見えています：</strong>' +
-      '<span>' + escapeHtml(copy.peerVisibleText) + '</span>' +
-    '</div>' +
-    '<div class="status-card-actions">' +
-      '<button class="status-card-btn status-card-btn--release" onclick="releaseIssueStatus()">✕ この状態を解除</button>' +
-      '<button class="status-card-btn status-card-btn--change" onclick="changeIssueStatus()">別の助け舟を選ぶ</button>' +
-    '</div>';
+    '<span class="status-bar-label">' + escapeHtml(copy.label) + '</span>' +
+    '<span class="status-bar-desc">' + escapeHtml(copy.description) + '</span>' +
+    '<button class="status-bar-release" type="button" onclick="releaseIssueStatus()">✕</button>';
 
   card.classList.remove('hidden');
-
-  // 状態カード表示中はボタン群を折りたたみ・おばちゃんボタンを薄く
-  if (issuePanel) issuePanel.classList.add('collapsed');
-  if (callObasanWrap) callObasanWrap.classList.add('dimmed');
 }
 
 // ----- 状態を解除して通常モードに戻す -----
@@ -1075,30 +1037,22 @@ function releaseIssueStatus() {
   const card = document.getElementById('assistant-status-card');
   if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
 
-  const issuePanel    = document.getElementById('issue-button-panel');
-  const callObasanWrap = document.getElementById('call-obasan-wrap');
-  if (issuePanel) issuePanel.classList.remove('collapsed');
-  if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
-
   updateStatusBar('あとはお二人で');
 }
 
-// ----- 別の助け舟を選ぶ（カードを消してissueパネルを展開）-----
+// ----- 別の助け舟を選ぶ（ステータスをリセットしてボトムシートを開く）-----
 function changeIssueStatus() {
   uiState.assistantTeam.statusVisible    = false;
   uiState.assistantTeam.activeIssueType  = null;
   uiState.assistantTeam.activeCharacterId = null;
+  uiState.assistantTeam.helpMenuOpen     = true;
   room.mode = 'normal';
 
   const card = document.getElementById('assistant-status-card');
   if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
 
-  const issuePanel    = document.getElementById('issue-button-panel');
-  const callObasanWrap = document.getElementById('call-obasan-wrap');
-  if (issuePanel) { issuePanel.classList.remove('collapsed'); issuePanel.classList.remove('hidden'); }
-  if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
-
   updateStatusBar('あとはお二人で');
+  renderHelpMenu();
 }
 
 // ----- 状態ボタンクリック時のハンドラ -----
@@ -1124,9 +1078,7 @@ function handleIssueButtonClick(issueType) {
   uiState.assistantTeam.lastCharacterId    = assignedCharacterId;
   uiState.assistantTeam.statusVisible      = true;
 
-  const issuePanel = document.getElementById('issue-button-panel');
   const inputArea  = document.getElementById('room-input-area');
-  const callWrap   = document.getElementById('call-obasan-wrap');
 
   // 5. 入力欄を一時非表示
   if (inputArea) inputArea.classList.add('hidden');
@@ -1146,16 +1098,14 @@ function handleIssueButtonClick(issueType) {
     issueType: issueType
   }).then(() => {
     // close_todayの場合は終了エリアを表示
-    if (issueType === 'close_today') {
-      updateStatusBar('今日はここまで');
-      if (callWrap) callWrap.classList.add('hidden');
-      if (issuePanel) issuePanel.classList.add('hidden');
-      const endArea = document.getElementById('room-end-area');
-      if (endArea) endArea.classList.remove('hidden');
-    } else {
-      // その他は入力欄を再表示。issueパネルはcollapsed状態のまま（状態カードが主役）
-      if (inputArea) inputArea.classList.remove('hidden');
-    }
+      if (issueType === 'close_today') {
+        updateStatusBar('今日はここまで');
+        const endArea = document.getElementById('room-end-area');
+        if (endArea) endArea.classList.remove('hidden');
+      } else {
+        // その他は入力欄を再表示。状態バーが主役
+        if (inputArea) inputArea.classList.remove('hidden');
+      }
     const container = document.getElementById('chat-container');
     if (container) container.scrollTop = container.scrollHeight;
   });
@@ -1165,20 +1115,60 @@ function handleIssueButtonClick(issueType) {
 // 迷ったら整理棚 ・ おばちゃんあみだ（Ver.0.4-A）
 // ============================================================
 
-// ----- ヘルパーメニュー開閉 -----
-function toggleHelperMenu() {
-  const panel = document.getElementById('helper-menu-panel');
-  if (!panel) return;
-  if (panel.classList.contains('hidden')) {
-    panel.classList.remove('hidden');
-  } else {
-    panel.classList.add('hidden');
+// ----- 助け舟ボトムシート（Ver.0.5-B）-----
+function toggleHelpMenu() {
+  uiState.assistantTeam.helpMenuOpen = !uiState.assistantTeam.helpMenuOpen;
+  renderHelpMenu();
+}
+
+function closeHelpMenu() {
+  uiState.assistantTeam.helpMenuOpen = false;
+  renderHelpMenu();
+}
+
+function handleHelpIssue(issueType) {
+  closeHelpMenu();
+  handleIssueButtonClick(issueType);
+}
+
+function handleOpenChoiceShelf() {
+  closeHelpMenu();
+  startHelperAction('light_lottery');
+}
+
+function renderHelpMenu() {
+  const root = document.getElementById('help-menu-root');
+  if (!root) return;
+
+  if (!uiState.assistantTeam.helpMenuOpen) {
+    root.innerHTML = '';
+    return;
   }
+
+  root.innerHTML =
+    '<div class="help-menu-backdrop" onclick="closeHelpMenu()"></div>' +
+    '<div class="help-menu-panel">' +
+      '<div class="help-menu-handle"></div>' +
+      '<div class="help-menu-title">👵🏻 助け舟</div>' +
+      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;awkward&#39;)">😳 気まずい / 沈黙</button>' +
+      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;waiting_reply&#39;)">⏳ 返事を待ってもらいたい</button>' +
+      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;purpose&#39;)">🔥 目的をはっきりさせたい</button>' +
+      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;safety_check&#39;)">🦺 安全確認したい</button>' +
+      '<button type="button" class="help-menu-item" onclick="handleOpenChoiceShelf()">🎲 迷ったら整理棚</button>' +
+      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;close_today&#39;)">🚪 今日はここまでにしたい</button>' +
+      '<button type="button" class="help-menu-close" onclick="closeHelpMenu()">閉じる</button>' +
+    '</div>';
+}
+
+// ----- レガシー：helper-menu-panel用（互換性のため残存）-----
+function toggleHelperMenu() {
+  uiState.assistantTeam.helpMenuOpen = !uiState.assistantTeam.helpMenuOpen;
+  renderHelpMenu();
 }
 
 function closeHelperMenu() {
-  const panel = document.getElementById('helper-menu-panel');
-  if (panel) panel.classList.add('hidden');
+  uiState.assistantTeam.helpMenuOpen = false;
+  renderHelpMenu();
 }
 
 // ----- あみだ全パネルを隐す -----
@@ -1375,7 +1365,7 @@ function runAmida() {
   lotteryChoice.result = result;
 
   // 結果を role: 'obasan' のメッセージとして追加
-  const resultText = `あみだ完了や！\n\n結果は……「${result.label}」になったで。\n\nただし、これは最終決定やないからな。\n結果を見て「やっぱり違うかも」と思ったら、それも大事な本音やで。\n\n参考くらいにして、最後は自分で選んでええよ🏥`;
+  const resultText = `あみだ完了や！\n\n結果は……「${result.label}」になったで。\n\nただし、これは最終決定やないからな。\n結果を見て「やっぱり違うかも」と思ったら、それも大事な本音やで。\n\n参考くらいにして、最後は自分で選んでええよ🍵`;
 
   addMessage('obasan', resultText, 400, {
     systemGenerated: true,
@@ -1673,7 +1663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.roomDraftMessage = textarea.value || '';
     });
 
-    // 入力中の文字を常に下書きとして保持する
+    // 入力中の下書きをstateに保存する（iPhone日本語入力の復元用）
     textarea.addEventListener('input', () => {
       state.roomDraftMessage = textarea.value || '';
     });
@@ -1688,6 +1678,7 @@ document.addEventListener('DOMContentLoaded', () => {
           || (navigator.maxTouchPoints > 1);
         if (isMobile) {
           // スマホではEnterを改行または変換確定として扱う（送信しない）
+          state.roomDraftMessage = textarea.value || '';
           return;
         }
         // PCでShift+Enterは改行
@@ -1705,14 +1696,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     textarea.addEventListener('focus', () => {
       document.body.classList.add('keyboard-active');
-      // iPhoneで入力欄が再描画や変換確定で空になった場合、下書きから復元する
+      // 入力中は助け舟メニューを閉じる
+      closeHelpMenu();
+      // iPhoneでフォーカス時に空になった場合、保存済み下書きから復元する
       if (!textarea.value && state.roomDraftMessage) {
         textarea.value = state.roomDraftMessage;
       }
     });
 
     textarea.addEventListener('blur', () => {
-      // 送信していない文字は消さず、下書きとして保持する
       state.roomDraftMessage = textarea.value || state.roomDraftMessage || '';
       // 少し遅延して解除（送信ボタンタップ時にボタンが非表示になるのを防ぐ）
       setTimeout(() => {
