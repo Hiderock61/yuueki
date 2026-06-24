@@ -876,11 +876,13 @@ function sendMyMessage() {
       `ちょっと待って。「${ngHit}」はこの部屋ではNG話題やったね。\n別の話題にしてみよか？`,
       0
     );
+    // NGワードの場合は入力欄を空にしない（ユーザーが修正できるように）
     return;
   }
 
-  textarea.value = '';
+  // メッセージ追加成功後だけ入力欄を空にする
   addMessage('user', text, 0);
+  textarea.value = '';
 
   // 初回送信時のみ相手のモック返信
   if (!state.roomFirstMessageSent) {
@@ -1640,362 +1642,60 @@ function escapeHtml(str) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('screen-top').classList.add('active');
   renderPartnerPresets();
+
+  // ============================================================
+  // iPhone入力バグ修正（Ver.0.5-B）
+  // compositionstart/end で日本語変換中を管理
+  // Enterキーで送信しない（送信ボタンのみ送信）
+  // ============================================================
+
+  let isComposing = false;
+
+  // 入力欄のイベントは startVirtualRoom 実行後に登録する必要があるため
+  // 入力欄が存在する場合は即座に登録、ない場合は MutationObserver で監視
+  function setupInputEvents() {
+    const textarea = document.getElementById('room-input-textarea');
+    if (!textarea || textarea._iPhoneEventsAttached) return;
+    textarea._iPhoneEventsAttached = true;
+
+    // 日本語変換中フラグ
+    textarea.addEventListener('compositionstart', () => {
+      isComposing = true;
+    });
+    textarea.addEventListener('compositionend', () => {
+      isComposing = false;
+    });
+
+    // Enterキー処理：変換中またはスマホでは送信しない
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        // 変換中は絶対に送信しない
+        if (isComposing) return;
+        // スマホ判定：タッチデバイス or UAで判定
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+          || (navigator.maxTouchPoints > 1);
+        if (isMobile) {
+          // スマホではEnterを改行または変換確定として扱う（送信しない）
+          return;
+        }
+        // PCでShift+Enterは改行
+        if (e.shiftKey) return;
+        // PCでEnterは送信
+        e.preventDefault();
+        sendMyMessage();
+      }
+    });
+  }
+
+  // 初期試行（入力欄がすでにある場合）
+  setupInputEvents();
+
+  // 入力欄が後からDOMに追加される場合に対応
+  const observer = new MutationObserver(() => {
+    setupInputEvents();
+  });
+  const appEl = document.getElementById('app');
+  if (appEl) {
+    observer.observe(appEl, { childList: true, subtree: true });
+  }
 });
-
-// ============================================================
-// Ver.0.6-A — 待合室 / おばちゃん紹介カード / 相手確認中
-// ============================================================
-
-// ===== デモプロフィール =====
-const demoProfiles = [
-  {
-    id: 'profile_nori_001',
-    displayName: 'ノリ強めさん',
-    avatarType: 'icon',
-    avatarEmoji: '👤',
-    photoStatus: 'later',
-    purpose: '軽く雑談したい',
-    okTopics: ['食べ物', 'グルメ', '音楽'],
-    ngTopics: ['外見', '体型', '重い話'],
-    talkTemperature: '軽め',
-    availability: '10分くらい',
-    obasanMemo: '最初は食べ物の話から入るとよさそうです。'
-  },
-  {
-    id: 'profile_cafe_002',
-    displayName: 'カフェ好きさん',
-    avatarType: 'illustration',
-    avatarEmoji: '☕',
-    photoStatus: 'no_photo',
-    purpose: '短時間だけ話したい',
-    okTopics: ['カフェ', '散歩', '映画'],
-    ngTopics: ['連絡先交換を急ぐこと', '外見評価'],
-    talkTemperature: 'ゆっくり',
-    availability: '短め',
-    obasanMemo: '焦らず、短い会話から始めるとよさそうです。'
-  },
-  {
-    id: 'profile_hobby_003',
-    displayName: '趣味人さん',
-    avatarType: 'illustration',
-    avatarEmoji: '🎨',
-    photoStatus: 'illustration',
-    purpose: '趣味や食べ物の話で盛り上がりたい',
-    okTopics: ['映画', '音楽', '旅行', 'カフェ'],
-    ngTopics: ['収入・お金', '将来の話'],
-    talkTemperature: 'ほどほど',
-    availability: 'ゆっくり',
-    obasanMemo: '共通の趣味から入ると話が弾みそうです。'
-  }
-];
-
-// ===== uiState.matching =====
-uiState.matching = {
-  currentScreen: 'screen-waiting-room',
-  selectedPurpose: null,
-  selectedOkTopics: [],
-  selectedNgTopics: [],
-  selectedTalkTime: null,
-  photoPreference: 'later',
-  currentProfileIndex: 0,
-  selectedProfileId: null,
-  matchStatus: 'idle',   // idle | searching | introduced | waiting_peer | matched | passed | cancelled
-  lastAction: null,
-  selectedFirstWord: null,
-  matchTimerId: null
-};
-
-// ===== 写真ステータスのラベル =====
-function getPhotoStatusLabel(photoStatus, avatarEmoji) {
-  if (photoStatus === 'later')        return '🌫️ 写真：あとで設定';
-  if (photoStatus === 'no_photo')     return '👤 写真なしで参加中';
-  if (photoStatus === 'illustration') return '🎨 イラストで参加中';
-  return avatarEmoji || '👤';
-}
-
-// ===== 待合室：目的ボタン選択 =====
-function selectWrPurpose(btn) {
-  document.querySelectorAll('.wr-purpose-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  uiState.matching.selectedPurpose = btn.dataset.purpose;
-  updateWrSearchBtn();
-}
-
-// ===== 待合室：タグトグル（OK/NG話題） =====
-function toggleWrTag(btn, type) {
-  btn.classList.toggle('selected');
-  const topic = btn.dataset.topic;
-  if (type === 'ok') {
-    const idx = uiState.matching.selectedOkTopics.indexOf(topic);
-    if (idx === -1) uiState.matching.selectedOkTopics.push(topic);
-    else            uiState.matching.selectedOkTopics.splice(idx, 1);
-  } else {
-    const idx = uiState.matching.selectedNgTopics.indexOf(topic);
-    if (idx === -1) uiState.matching.selectedNgTopics.push(topic);
-    else            uiState.matching.selectedNgTopics.splice(idx, 1);
-  }
-}
-
-// ===== 待合室：話せる時間選択 =====
-function selectWrTime(btn) {
-  document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  uiState.matching.selectedTalkTime = btn.dataset.time;
-}
-
-// ===== 待合室：写真タイプ選択 =====
-function selectWrPhoto(btn) {
-  document.querySelectorAll('[data-photo]').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  uiState.matching.photoPreference = btn.dataset.photo;
-}
-
-// ===== 待合室：候補を探すボタンの活性化 =====
-function updateWrSearchBtn() {
-  const btn = document.getElementById('wr-search-btn');
-  const note = document.querySelector('.wr-search-note');
-  if (!btn) return;
-  if (uiState.matching.selectedPurpose) {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    if (note) note.style.display = 'none';
-  } else {
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-    if (note) note.style.display = 'block';
-  }
-}
-
-// ===== 候補を探す =====
-function handleSearchCandidate() {
-  if (!uiState.matching.selectedPurpose) return;
-  uiState.matching.matchStatus = 'searching';
-  uiState.matching.currentProfileIndex = 0;
-  uiState.matching.lastAction = 'search';
-
-  // 静的モック：最初のdemoProfileを表示してscreen-introductionへ
-  const profile = demoProfiles[uiState.matching.currentProfileIndex];
-  uiState.matching.selectedProfileId = profile.id;
-  uiState.matching.matchStatus = 'introduced';
-
-  renderIntroductionCard(profile);
-  goTo('screen-introduction');
-}
-
-// ===== 紹介カードを描画 =====
-function renderIntroductionCard(profile) {
-  const card = document.getElementById('intro-profile-card');
-  if (!card) return;
-
-  const photoLabel = getPhotoStatusLabel(profile.photoStatus, profile.avatarEmoji);
-  const okHtml  = profile.okTopics.map(t => `<span class="intro-tag intro-tag--ok">${escapeHtml(t)}</span>`).join('');
-  const ngHtml  = profile.ngTopics.map(t => `<span class="intro-tag intro-tag--ng">${escapeHtml(t)}</span>`).join('');
-
-  card.innerHTML = `
-    <div class="intro-card-inner">
-      <div class="intro-card-avatar-row">
-        <div class="intro-card-avatar">${escapeHtml(profile.avatarEmoji)}</div>
-        <div class="intro-card-avatar-meta">
-          <div class="intro-card-name">${escapeHtml(profile.displayName)}</div>
-          <div class="intro-card-photo-status">${escapeHtml(photoLabel)}</div>
-        </div>
-      </div>
-      <div class="intro-card-purpose-row">
-        <span class="intro-card-purpose-label">今日の目的</span>
-        <span class="intro-card-purpose-value">${escapeHtml(profile.purpose)}</span>
-      </div>
-      <div class="intro-card-topics-row">
-        <div class="intro-card-topics-label">OK話題</div>
-        <div class="intro-card-tags">${okHtml}</div>
-      </div>
-      <div class="intro-card-topics-row">
-        <div class="intro-card-topics-label intro-card-topics-label--ng">NG話題</div>
-        <div class="intro-card-tags">${ngHtml}</div>
-      </div>
-      <div class="intro-card-temp-row">
-        <span class="intro-card-temp-label">会話の温度</span>
-        <span class="intro-card-temp-value">${escapeHtml(profile.talkTemperature)}</span>
-        <span class="intro-card-avail-label">話せる時間</span>
-        <span class="intro-card-avail-value">${escapeHtml(profile.availability)}</span>
-      </div>
-      <div class="intro-card-memo">
-        <div class="intro-card-memo-label">👵🏻 おばちゃんメモ</div>
-        <div class="intro-card-memo-text">${escapeHtml(profile.obasanMemo)}</div>
-      </div>
-    </div>
-  `;
-
-  // おばちゃんの紹介文を更新
-  const speech = document.getElementById('intro-obasan-speech');
-  if (speech) {
-    speech.innerHTML = `<p>この人、今日の目的が近そうやで。</p><p>いきなり深い話より、OK話題から入るとよさそうやな。</p>`;
-  }
-
-  // 見送りメッセージを隠す
-  const passMsg = document.getElementById('intro-pass-msg');
-  if (passMsg) passMsg.classList.add('hidden');
-
-  // アクションボタンを表示
-  const actions = document.querySelector('.intro-actions');
-  if (actions) actions.classList.remove('hidden');
-}
-
-// ===== 紹介カード：畳の部屋へ入る =====
-function handleTalkWithProfile() {
-  const profileId = uiState.matching.selectedProfileId;
-  if (!profileId) return;
-  uiState.matching.matchStatus = 'waiting_peer';
-  uiState.matching.lastAction = 'enter';
-
-  // 既存の待機タイマーが残っていたら解除
-  if (uiState.matching.matchTimerId) {
-    clearTimeout(uiState.matching.matchTimerId);
-    uiState.matching.matchTimerId = null;
-  }
-
-  renderMatchWaiting();
-  goTo('screen-match-waiting');
-
-  // 静的モック：3秒後にmatched扱いでルームへ
-  // 途中で「今回はやめる」などを押した場合は入室しない
-  uiState.matching.matchTimerId = setTimeout(() => {
-    if (uiState.matching.matchStatus !== 'waiting_peer' ||
-        uiState.matching.selectedProfileId !== profileId) {
-      return;
-    }
-    uiState.matching.matchTimerId = null;
-    enterRoomWithProfile(profileId);
-  }, 3000);
-}
-
-// ===== 紹介カード：見送る =====
-function handlePassProfile() {
-  uiState.matching.matchStatus = 'passed';
-  uiState.matching.lastAction = 'pass';
-
-  // アクションボタンを隠す
-  const actions = document.querySelector('.intro-actions');
-  if (actions) actions.classList.add('hidden');
-
-  // 見送りメッセージを表示
-  const passMsg = document.getElementById('intro-pass-msg');
-  if (passMsg) passMsg.classList.remove('hidden');
-}
-
-// ===== 紹介カード：別の人を見る =====
-function handleNextProfile() {
-  uiState.matching.currentProfileIndex =
-    (uiState.matching.currentProfileIndex + 1) % demoProfiles.length;
-  const profile = demoProfiles[uiState.matching.currentProfileIndex];
-  uiState.matching.selectedProfileId = profile.id;
-  uiState.matching.matchStatus = 'introduced';
-  uiState.matching.lastAction = 'next';
-
-  renderIntroductionCard(profile);
-
-  // screen-introductionにいない場合は移動
-  const intro = document.getElementById('screen-introduction');
-  if (!intro || !intro.classList.contains('active')) {
-    goTo('screen-introduction');
-  }
-}
-
-// ===== 相手確認中画面を描画 =====
-function renderMatchWaiting() {
-  const waitMsg = document.getElementById('match-wait-more-msg');
-  if (waitMsg) waitMsg.classList.add('hidden');
-  const wordPanel = document.getElementById('match-first-word-panel');
-  if (wordPanel) wordPanel.classList.add('hidden');
-  uiState.matching.selectedFirstWord = null;
-  // ボタンのselectedをリセット
-  document.querySelectorAll('.match-word-btn').forEach(b => b.classList.remove('selected'));
-}
-
-// ===== 相手確認中：最初の一言パネルを開閉 =====
-function toggleFirstWordPanel() {
-  const panel = document.getElementById('match-first-word-panel');
-  if (!panel) return;
-  panel.classList.toggle('hidden');
-}
-
-// ===== 相手確認中：最初の一言を選ぶ =====
-function selectFirstWord(btn) {
-  document.querySelectorAll('.match-word-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  uiState.matching.selectedFirstWord = btn.textContent.trim();
-}
-
-// ===== 相手確認中：もう少し待つ =====
-function matchWaitMore() {
-  const msg = document.getElementById('match-wait-more-msg');
-  if (msg) msg.classList.remove('hidden');
-}
-
-// ===== 相手確認中：今回はやめる =====
-function handleCancelWaiting() {
-  if (uiState.matching.matchTimerId) {
-    clearTimeout(uiState.matching.matchTimerId);
-    uiState.matching.matchTimerId = null;
-  }
-  uiState.matching.matchStatus = 'cancelled';
-  uiState.matching.lastAction = 'cancel';
-  goTo('screen-waiting-room');
-}
-
-// ===== プロフィールIDからルームへ入る =====
-function enterRoomWithProfile(profileId) {
-  const profile = demoProfiles.find(p => p.id === profileId);
-  if (!profile) return;
-
-  uiState.matching.matchStatus = 'matched';
-
-  // demoProfileをpartnerPresetsに一時マッピング
-  const tempKey = 'demo_' + profileId;
-  partnerPresets[tempKey] = {
-    key: tempKey,
-    name: profile.displayName,
-    emoji: profile.avatarEmoji,
-    desc: profile.purpose,
-    torisetsu: {
-      ngTopics: profile.ngTopics,
-      okTopics: profile.okTopics,
-      style: '会話温度：' + profile.talkTemperature,
-      firstMessages: [
-        'はじめまして。よろしくお願いします。',
-        'こんにちは。今日はよろしくです。'
-      ]
-    }
-  };
-
-  state.selectedPartnerKey = tempKey;
-
-  // 最初の一言があれば使う（将来拡張用）
-  // uiState.matching.selectedFirstWord は room内で参照可能
-
-  startVirtualRoom();
-}
-
-// ===== 待合室の初期化 =====
-function initWaitingRoom() {
-  // 目的ボタンのselectedをリセット
-  document.querySelectorAll('.wr-purpose-btn').forEach(b => b.classList.remove('selected'));
-  // タグのselectedをリセット
-  document.querySelectorAll('.wr-tag').forEach(b => b.classList.remove('selected'));
-  // uiState.matchingをリセット
-  uiState.matching.selectedPurpose   = null;
-  uiState.matching.selectedOkTopics  = [];
-  uiState.matching.selectedNgTopics  = [];
-  uiState.matching.selectedTalkTime  = null;
-  uiState.matching.photoPreference   = 'later';
-  uiState.matching.currentProfileIndex = 0;
-  uiState.matching.selectedProfileId = null;
-  uiState.matching.matchStatus       = 'idle';
-  uiState.matching.lastAction        = null;
-  uiState.matching.selectedFirstWord = null;
-  if (uiState.matching.matchTimerId) {
-    clearTimeout(uiState.matching.matchTimerId);
-    uiState.matching.matchTimerId = null;
-  }
-  // 検索ボタンを非活性に
-  updateWrSearchBtn();
-}
