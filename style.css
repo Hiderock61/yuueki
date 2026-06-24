@@ -2168,3 +2168,111 @@ button:focus-visible {
 
 .assistant-status-card[data-issue="close_today"] .status-card-label { color: #5a5a6a; }
 .assistant-status-card[data-issue="close_today"] { background: linear-gradient(135deg, #f8f8fa 0%, #f0f0f4 100%); border-color: #d0d0dc; }
+
+/* ============================================================
+   Ver.0.5-B UI修正 — 状態表示1枚化・iPhone最適化
+   ============================================================ */
+
+/* ----- 状態バー：最小化スタイル（テキストのみ、高さ圧縮） ----- */
+.room-status-bar {
+  padding: 6px 16px;
+  min-height: 32px;
+  font-size: 0.8rem;
+}
+
+/* mode-character: キャラ介入中 */
+.room-status-bar.mode-character {
+  background: linear-gradient(90deg, #f0ecf8 0%, #e8e0f5 100%);
+  border-color: #c4b0e8;
+  color: #5a3e8a;
+}
+
+/* ----- issue-button-panel: collapsed（折りたたみ）状態 ----- */
+/* 状態カード表示中はボタン群を小さく・タイトルのみ表示 */
+.issue-button-panel.collapsed {
+  padding: 6px 16px;
+  background: #f5f2ee;
+  border-top: 1px solid #e0d8d0;
+}
+
+.issue-button-panel.collapsed .issue-panel-header {
+  font-size: 10px;
+  color: #b0a090;
+  margin-bottom: 0;
+}
+
+.issue-button-panel.collapsed .issue-button-grid,
+.issue-button-panel.collapsed .issue-coming-soon {
+  display: none;
+}
+
+/* ----- call-obasan-wrap: dimmed（薄く表示）状態 ----- */
+/* 状態カード表示中はおばちゃんボタンを薄く */
+.call-obasan-wrap.dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ----- 状態カード内アクションボタン ----- */
+.status-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.status-card-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-main);
+  line-height: 1.3;
+}
+
+.status-card-btn:active {
+  opacity: 0.75;
+  transform: scale(0.97);
+}
+
+/* 解除ボタン（グレー系・控えめ） */
+.status-card-btn--release {
+  background: #f0ece8;
+  border-color: #c8b8a8;
+  color: #6a5a4a;
+}
+
+.status-card-btn--release:hover {
+  background: #e8e0d8;
+}
+
+/* 別の助け舟ボタン（薄紫系） */
+.status-card-btn--change {
+  background: #f0ecf8;
+  border-color: #c4b0e8;
+  color: #5a3e8a;
+}
+
+.status-card-btn--change:hover {
+  background: #e8e0f5;
+}
+
+/* ----- 状態カード：iPhone最適化（スクロール内に収まるよう調整） ----- */
+.assistant-status-card {
+  margin: 0 12px 6px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  /* 固定ヘッダーにしない：スクロールに乗せる */
+  flex-shrink: 0;
+}
+
+/* ----- tea-time-banner は削除済み（HTMLから除去）のため非表示保険 ----- */
+.tea-time-banner {
+  display: none !important;
+}

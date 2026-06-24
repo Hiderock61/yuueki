@@ -264,7 +264,7 @@
       <div class="header-bar">
         <button class="back-btn" onclick="goTo('screen-partner-select')">← 戻る</button>
         <span class="app-logo" id="room-header-title">👵🏻 一対一ルーム</span>
-        <span class="room-version">Ver.0.4-A</span>
+        <span class="room-version">Ver.0.5-B</span>
       </div>
 
       <!-- スポンサー枠（仮） -->
@@ -289,16 +289,10 @@
         </div>
       </div>
 
-      <!-- おばさん状態バー -->
+      <!-- おばさん状態バー（最小表示：アイコン＋モード名のみ） -->
       <div class="room-status-bar" id="room-status-bar">
-        <span class="room-status-icon">👵🏻</span>
-        <span class="room-status-text" id="room-status-text">おばちゃんが場を整えています…</span>
-      </div>
-
-      <!-- お茶タイムバナー（wait_reply選択時に表示） -->
-      <div class="tea-time-banner hidden" id="tea-time-banner">
-        <span class="tea-time-icon">🍵</span>
-        <span class="tea-time-text">お茶タイム中：今は少し言葉を選んでいます</span>
+        <span class="room-status-icon" id="room-status-icon">👵🏻</span>
+        <span class="room-status-text" id="room-status-text">見守り中</span>
       </div>
 
       <!-- 状態帯カード（Ver.0.5-B）：uiState.assistantTeam.statusVisibleがtrueの時に表示 -->
@@ -336,7 +330,7 @@
           <span class="coming-soon-label">準備中</span>
           <span class="coming-soon-char">😎 ダモリさん</span>
           <span class="coming-soon-char">🕺🏻 ノリ助</span>
-          <span class="coming-soon-char">🧨 ヒデロコ</span>
+          <span class="coming-soon-char">🫨 ヒデロコ</span>
         </div>
       </div>
 

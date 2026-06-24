@@ -654,9 +654,6 @@ function startVirtualRoom() {
   if (choiceList) { choiceList.innerHTML = ''; choiceList.classList.add('hidden'); }
   const endArea = document.getElementById('room-end-area');
   if (endArea) endArea.classList.add('hidden');
-  // お茶タイムバナーリセット
-  const teaBanner = document.getElementById('tea-time-banner');
-  if (teaBanner) teaBanner.classList.add('hidden');
   // 状態バーのモードクラスリセット
   const statusBar = document.getElementById('room-status-bar');
   if (statusBar) statusBar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
@@ -798,16 +795,18 @@ function addMessage(type, text, delay, metaOrCharOpts) {
 }
 
 // ----- 状態バー更新 -----
+// 状態バー更新（最小表示：モード名のみ、詳細説明なし）
 function updateStatusBar(text) {
   const el = document.getElementById('room-status-text');
   if (el) el.textContent = text;
   // 状態バーのモードクラスを切り替え
   const bar = document.getElementById('room-status-bar');
   if (bar) {
-    bar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
+    bar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing', 'mode-character');
     if (room.mode === 'decompressing') bar.classList.add('mode-decompressing');
     else if (room.mode === 'waiting_reply') bar.classList.add('mode-waiting');
     else if (room.mode === 'closing') bar.classList.add('mode-closing');
+    else if (room.mode === 'character_assist') bar.classList.add('mode-character');
   }
 }
 
@@ -911,7 +910,7 @@ function callObasan() {
   const inputArea = document.getElementById('room-input-area');
   if (inputArea) inputArea.classList.add('hidden');
 
-  updateStatusBar('🛟 おばちゃん介入中：会話の流れをゆるめています');
+  updateStatusBar('👵🏻 おばちゃん介入中');
 
   // 初動メッセージ（仕様通り）
   addMessage('obasan',
@@ -937,16 +936,13 @@ function handleObasanAction(actionId) {
   if (actionId === 'wait_reply') {
     // ちょっと待って！
     room.mode = 'waiting_reply';
-    updateStatusBar('🍵 お茶タイム中：言葉を選ぶ時間を取っています');
+    updateStatusBar('🍵 お茶タイム中');
 
     addMessage('obasan',
       'ちょっとストップな。\n今、じっくり言葉を選んでるところやから、少しだけ待ったげてな。\n\n急がんでええよ。\n焦らずいこか🍵',
       300,
       { systemGenerated: true, interventionType: 'wait_reply', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
-      // お茶タイムバナーを表示
-      const teaBanner = document.getElementById('tea-time-banner');
-      if (teaBanner) teaBanner.classList.remove('hidden');
       // 入力欄を再表示（言葉を選ぶ時間を与える）
       if (inputArea) inputArea.classList.remove('hidden');
       // おばちゃんボタンを再有効化
@@ -978,7 +974,7 @@ function handleObasanAction(actionId) {
     // おばちゃん、間に入って
     room.mode = 'decompressing';
     uiState.obasan.mode = 'decompressing';
-    updateStatusBar('🛟 おばちゃん介入中：会話の流れをゆるめています');
+    updateStatusBar('👵🏻 おばちゃん介入中');
 
     addMessage('obasan',
       '了解や。\nここから少し、おばちゃんも一緒におるね。\n\n二人のトリセツを見ながら、ちょうどええ距離感で話せるように、間を持つわ。',
@@ -1023,8 +1019,14 @@ function renderAssistantStatusCard() {
   const card = document.getElementById('assistant-status-card');
   if (!card) return;
 
+  const issuePanel    = document.getElementById('issue-button-panel');
+  const callObasanWrap = document.getElementById('call-obasan-wrap');
+
   if (!uiState.assistantTeam.statusVisible) {
     card.classList.add('hidden');
+    // カード非表示時はボタン群を通常表示に戻す
+    if (issuePanel) issuePanel.classList.remove('collapsed');
+    if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
     return;
   }
 
@@ -1042,9 +1044,53 @@ function renderAssistantStatusCard() {
     '<div class="status-card-peer-preview">' +
       '<strong>相手側にはこう見えています：</strong>' +
       '<span>' + escapeHtml(copy.peerVisibleText) + '</span>' +
+    '</div>' +
+    '<div class="status-card-actions">' +
+      '<button class="status-card-btn status-card-btn--release" onclick="releaseIssueStatus()">✕ この状態を解除</button>' +
+      '<button class="status-card-btn status-card-btn--change" onclick="changeIssueStatus()">別の助け舟を選ぶ</button>' +
     '</div>';
 
   card.classList.remove('hidden');
+
+  // 状態カード表示中はボタン群を折りたたみ・おばちゃんボタンを薄く
+  if (issuePanel) issuePanel.classList.add('collapsed');
+  if (callObasanWrap) callObasanWrap.classList.add('dimmed');
+}
+
+// ----- 状態を解除して通常モードに戻す -----
+function releaseIssueStatus() {
+  uiState.assistantTeam.statusVisible    = false;
+  uiState.assistantTeam.activeIssueType  = null;
+  uiState.assistantTeam.activeCharacterId = null;
+  room.mode = 'normal';
+
+  const card = document.getElementById('assistant-status-card');
+  if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
+
+  const issuePanel    = document.getElementById('issue-button-panel');
+  const callObasanWrap = document.getElementById('call-obasan-wrap');
+  if (issuePanel) issuePanel.classList.remove('collapsed');
+  if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
+
+  updateStatusBar('あとはお二人で');
+}
+
+// ----- 別の助け舟を選ぶ（カードを消してissueパネルを展開）-----
+function changeIssueStatus() {
+  uiState.assistantTeam.statusVisible    = false;
+  uiState.assistantTeam.activeIssueType  = null;
+  uiState.assistantTeam.activeCharacterId = null;
+  room.mode = 'normal';
+
+  const card = document.getElementById('assistant-status-card');
+  if (card) { card.classList.add('hidden'); card.innerHTML = ''; }
+
+  const issuePanel    = document.getElementById('issue-button-panel');
+  const callObasanWrap = document.getElementById('call-obasan-wrap');
+  if (issuePanel) { issuePanel.classList.remove('collapsed'); issuePanel.classList.remove('hidden'); }
+  if (callObasanWrap) callObasanWrap.classList.remove('dimmed');
+
+  updateStatusBar('あとはお二人で');
 }
 
 // ----- 状態ボタンクリック時のハンドラ -----
@@ -1064,29 +1110,27 @@ function handleIssueButtonClick(issueType) {
     room.mode = 'character_assist';
   }
 
-  // 4. uiState.assistantTeamを更新（Ver.0.5-B: statusVisibleを追加）
+  // 4. uiState.assistantTeamを更新（常に1枚のみ：既存カードは上書き）
   uiState.assistantTeam.activeIssueType    = issueType;
   uiState.assistantTeam.activeCharacterId  = assignedCharacterId;
   uiState.assistantTeam.lastCharacterId    = assignedCharacterId;
   uiState.assistantTeam.statusVisible      = true;
 
-  // 5. 状態ボタンパネルを閉じる
   const issuePanel = document.getElementById('issue-button-panel');
-  if (issuePanel) issuePanel.classList.add('hidden');
+  const inputArea  = document.getElementById('room-input-area');
+  const callWrap   = document.getElementById('call-obasan-wrap');
 
-  // 6. 入力欄を隐す
-  const inputArea = document.getElementById('room-input-area');
-  const callWrap  = document.getElementById('call-obasan-wrap');
+  // 5. 入力欄を一時非表示
   if (inputArea) inputArea.classList.add('hidden');
 
-  // 7. キャラごとの固定メッセージを表示
+  // 6. キャラごとの固定メッセージを表示
   const msgData = CHARACTER_MESSAGES[issueType];
   if (!msgData) return;
 
-  const statusLabel = character.emoji + ' ' + character.name + 'が入りました';
+  const statusLabel = character.emoji + ' ' + character.name;
   updateStatusBar(statusLabel);
 
-  // 8. 状態帯カードを描画（Ver.0.5-B）
+  // 7. 状態帯カードを描画（1枚のみ、重複なし）
   renderAssistantStatusCard();
 
   addMessage('character', msgData.text, 300, {
@@ -1097,13 +1141,12 @@ function handleIssueButtonClick(issueType) {
     if (issueType === 'close_today') {
       updateStatusBar('今日はここまで');
       if (callWrap) callWrap.classList.add('hidden');
+      if (issuePanel) issuePanel.classList.add('hidden');
       const endArea = document.getElementById('room-end-area');
       if (endArea) endArea.classList.remove('hidden');
     } else {
-      // その他は入力欄を再表示
+      // その他は入力欄を再表示。issueパネルはcollapsed状態のまま（状態カードが主役）
       if (inputArea) inputArea.classList.remove('hidden');
-      // 状態ボタンを再表示
-      if (issuePanel) issuePanel.classList.remove('hidden');
     }
     const container = document.getElementById('chat-container');
     if (container) container.scrollTop = container.scrollHeight;
