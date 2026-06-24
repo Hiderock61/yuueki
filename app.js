@@ -80,9 +80,10 @@ const state = {
   roomMessages: [],
   roomFirstMessageSent: false,
   roomCalledObasan: false,
-  roomDraftMessage: '',
   // ふりかえり
-  reviewAnswers: {}
+  reviewAnswers: {},
+  // 入力下書き（iPhone日本語入力対策：Ver.0.5-C）
+  roomDraftMessage: ""
 };
 
 // ===== オノノケ縁側システム（Ver.0.5-A）=====
@@ -93,21 +94,21 @@ const CHARACTER_REGISTRY = {
     name: 'つながろおばちゃん',
     emoji: '👵🏻',
     role: 'decompression',
-    description: '初対面や気まずさをゆるめる'
+    description: '審判でも監視でもありません。目的を言う自由と、相手が断る自由のあいだで、空気がもつれた時に入る助け舟です。'
   },
   safety: {
     id: 'safety',
     name: '安全さん',
     emoji: '🦺',
     role: 'boundary',
-    description: '同意・境界線・断る自由を確認する'
+    description: '警察ではありません。同意、境界線、断る自由、撤退権がちゃんと動いているかを確認する係です。'
   },
   manual: {
     id: 'manual',
     name: 'トリセツくん',
     emoji: '📄',
     role: 'intent_sorting',
-    description: '目的や関係性の希望を整理する'
+    description: '説教係ではありません。恋愛のふりや好意の演技でズレないように、今日の目的と期待値を整理する係です。'
   }
 };
 
@@ -632,7 +633,6 @@ function startVirtualRoom() {
   state.roomMessages = [];
   state.roomFirstMessageSent = false;
   state.roomCalledObasan = false;
-  state.roomDraftMessage = '';
 
   // room / uiState 初期化（Ver.0.3-C / Ver.0.5-A）
   room.mode = 'normal';
@@ -872,10 +872,10 @@ function sendMyMessage() {
     return;
   }
 
-  // メッセージ追加成功後だけ入力欄を空にする
+  // メッセージ追加成功後だけ入力欄と下書きをクリアする
   addMessage('user', text, 0);
   textarea.value = '';
-  state.roomDraftMessage = '';
+  state.roomDraftMessage = ''; // 送信成功後だけドラフトをクリア
 
   // 初回送信時のみ相手のモック返信
   if (!state.roomFirstMessageSent) {
@@ -1150,6 +1150,7 @@ function renderHelpMenu() {
     '<div class="help-menu-panel">' +
       '<div class="help-menu-handle"></div>' +
       '<div class="help-menu-title">👵🏻 助け舟</div>' +
+      '<p class="help-menu-microcopy">👵🏻 本音を言う権利と、断る権利は、いつでもセットやで。</p>' +
       '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;awkward&#39;)">😳 気まずい / 沈黙</button>' +
       '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;waiting_reply&#39;)">⏳ 返事を待ってもらいたい</button>' +
       '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;purpose&#39;)">🔥 目的をはっきりさせたい</button>' +
@@ -1660,12 +1661,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     textarea.addEventListener('compositionend', () => {
       isComposing = false;
-      state.roomDraftMessage = textarea.value || '';
+      // 変換確定後も下書きを保存（Ver.0.5-C）
+      state.roomDraftMessage = textarea.value;
     });
 
-    // 入力中の下書きをstateに保存する（iPhone日本語入力の復元用）
+    // 入力イベント：入力のたびに下書きを保存（Ver.0.5-C）
     textarea.addEventListener('input', () => {
-      state.roomDraftMessage = textarea.value || '';
+      state.roomDraftMessage = textarea.value;
     });
 
     // Enterキー処理：変換中またはスマホでは送信しない
@@ -1678,7 +1680,6 @@ document.addEventListener('DOMContentLoaded', () => {
           || (navigator.maxTouchPoints > 1);
         if (isMobile) {
           // スマホではEnterを改行または変換確定として扱う（送信しない）
-          state.roomDraftMessage = textarea.value || '';
           return;
         }
         // PCでShift+Enterは改行
@@ -1698,14 +1699,16 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('keyboard-active');
       // 入力中は助け舟メニューを閉じる
       closeHelpMenu();
-      // iPhoneでフォーカス時に空になった場合、保存済み下書きから復元する
+      // 入力欄が空なら下書きから復元（Ver.0.5-C）
       if (!textarea.value && state.roomDraftMessage) {
         textarea.value = state.roomDraftMessage;
       }
     });
 
+    // blur：下書き保存 + keyboard-active除去（Ver.0.5-C統合版）
     textarea.addEventListener('blur', () => {
-      state.roomDraftMessage = textarea.value || state.roomDraftMessage || '';
+      // 下書きを保存（フォーカスが外れても文字を消さない）
+      state.roomDraftMessage = textarea.value;
       // 少し遅延して解除（送信ボタンタップ時にボタンが非表示になるのを防ぐ）
       setTimeout(() => {
         document.body.classList.remove('keyboard-active');
