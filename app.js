@@ -1,7 +1,7 @@
 'use strict';
 
 // ============================================================
-// YUUEKi.com Ver.0.2 — app.js
+// YUUEKi.com Ver.0.6-A-i2 — app.js
 // ============================================================
 
 // ===== データモデル =====
@@ -84,8 +84,21 @@ const state = {
   reviewAnswers: {},
   // 入力下書き（iPhone日本語入力対策：Ver.0.5-C）
   roomDraftMessage: "",
-  // 日本語IME変換中フラグ（Ver.0.5-D imefix2）
-  isComposingMessage: false
+  // isComposingMessage（IMEフラグ：Ver.0.5-C）
+  isComposingMessage: false,
+  // 待合室マッチング状態（Ver.0.6-A）
+  matching: {
+    currentScreen: "waiting_room",
+    purpose: null,
+    talkTime: null,
+    talkTemperature: null,
+    okTopics: [],
+    ngTopics: [],
+    selectedProfileId: null,
+    matchStatus: "idle"
+  },
+  // 会話部屋設定（Ver.0.6-A）
+  roomConfig: null
 };
 
 // ===== オノノケ縁側システム（Ver.0.5-A）=====
@@ -343,6 +356,290 @@ const torisetsuQuestions = [
     multi: true
   }
 ];
+
+// ============================================================
+// 待合室フロー定数（Ver.0.6-A）
+// ============================================================
+
+const PURPOSE_OPTIONS = [
+  {
+    id: 'talk',
+    label: 'ただ話したい',
+    sub: '日常や軽い雑談をしたい',
+    okTopics: ['日常', '趣味', '食べ物', '映画', '音楽'],
+    ngTopics: ['下ネタ', '説教', '重い詮索', '連絡先交換を急ぐ']
+  },
+  {
+    id: 'friend',
+    label: '友達・趣味の話',
+    sub: '気の合う人とゆっくり話したい',
+    okTopics: ['趣味', '映画', '音楽', '散歩', '好きなもの'],
+    ngTopics: ['外見評価', '体型の話', '急な恋愛圧', '連絡先交換を急ぐ']
+  },
+  {
+    id: 'date',
+    label: '恋人・パートナー探し',
+    sub: '真面目に出会いの可能性を見たい',
+    okTopics: ['価値観', '休日', '好きなこと', '会う前の確認'],
+    ngTopics: ['急な性的要求', '詰問', '収入マウント', '外見だけの評価']
+  },
+  {
+    id: 'lonely',
+    label: '今日はちょっと寂しい',
+    sub: 'ただ誰かの気配がほしい',
+    okTopics: ['近況', '他愛ない話', '相槌', 'やさしい雑談'],
+    ngTopics: ['説教', 'アドバイス強要', 'スペック比較', '急かすこと']
+  },
+  {
+    id: 'short',
+    label: '短時間だけ話したい',
+    sub: '少しだけ誰かと話したい',
+    okTopics: ['軽い話', '食べ物', '今日あったこと', '短い雑談'],
+    ngTopics: ['長時間前提', '重い相談', '詰問', '連絡先交換を急ぐ']
+  },
+  {
+    id: 'sex',
+    label: 'セックスパートナーを探したい',
+    sub: '成人同士・目的一致・断る自由が前提',
+    okTopics: ['目的確認', '境界線', '会う条件', '断る自由の確認'],
+    ngTopics: ['強要', 'ごまかし', '相手の拒否を無視', '未成年', '同意のない話']
+  },
+  {
+    id: 'undecided',
+    label: 'まだ決まっていない',
+    sub: 'おばちゃんと一緒に整理したい',
+    okTopics: ['目的整理', '軽い雑談', '今の気分'],
+    ngTopics: ['急かすこと', '決めつけ', '詰問']
+  }
+];
+
+const TALK_TIME_OPTIONS = [
+  { id: 'five',   label: '5分だけ',    sub: 'ほんの少しだけ', temperature: '軽め' },
+  { id: 'ten',    label: '10分くらい', sub: '軽く話す',       temperature: '軽め' },
+  { id: 'thirty', label: '30分くらい', sub: 'お茶一杯分',     temperature: '普通' },
+  { id: 'slow',   label: 'のんびり',   sub: '急がず話す',     temperature: 'ゆっくり' }
+];
+
+// ============================================================
+// 待合室フロー関数（Ver.0.6-A）
+// ============================================================
+
+// 待合室トップへ
+function goToWaitingRoom() {
+  state.matching = {
+    currentScreen: 'waiting_room',
+    purpose: null,
+    talkTime: null,
+    talkTemperature: null,
+    okTopics: [],
+    ngTopics: [],
+    selectedProfileId: null,
+    matchStatus: 'idle'
+  };
+  state.roomConfig = null;
+  goTo('screen-waiting-room');
+}
+
+// 目的選択画面へ
+function goToSelectPurpose() {
+  goTo('screen-select-purpose');
+}
+
+// 目的を選択
+function selectPurpose(purposeId) {
+  const opt = PURPOSE_OPTIONS.find(function(p) { return p.id === purposeId; });
+  if (!opt) return;
+
+  if (purposeId === 'sex') {
+    // セックスパートナー目的：確認カードを表示
+    state.matching.purpose = purposeId;
+    goTo('screen-sex-confirm');
+    return;
+  }
+
+  state.matching.purpose = purposeId;
+  state.matching.okTopics = opt.okTopics.slice();
+  state.matching.ngTopics = opt.ngTopics.slice();
+  goTo('screen-select-time');
+}
+
+// sex確認カードで「理解して進む」
+function confirmSexPurpose() {
+  var opt = PURPOSE_OPTIONS.find(function(p) { return p.id === 'sex'; });
+  if (opt) {
+    state.matching.okTopics = opt.okTopics.slice();
+    state.matching.ngTopics = opt.ngTopics.slice();
+  }
+  goTo('screen-select-time');
+}
+
+// sex確認カードで「別の目的を選ぶ」
+function cancelSexPurpose() {
+  state.matching.purpose = null;
+  goTo('screen-select-purpose');
+}
+
+// 話せる時間を選択
+function selectTalkTime(talkTimeId) {
+  var opt = TALK_TIME_OPTIONS.find(function(t) { return t.id === talkTimeId; });
+  if (!opt) return;
+  state.matching.talkTime = talkTimeId;
+  state.matching.talkTemperature = opt.temperature;
+  goTo('screen-obachan-card');
+  renderObachanCard();
+}
+
+// おばちゃんカードを描画
+function renderObachanCard() {
+  var purposeOpt = PURPOSE_OPTIONS.find(function(p) { return p.id === state.matching.purpose; });
+  var timeOpt    = TALK_TIME_OPTIONS.find(function(t) { return t.id === state.matching.talkTime; });
+
+  var purposeLabel = purposeOpt ? purposeOpt.label : '—';
+  var timeLabel    = timeOpt    ? timeOpt.label    : '—';
+  var okText  = (state.matching.okTopics  || []).slice(0, 3).join('・') || '—';
+  var ngText  = (state.matching.ngTopics  || []).slice(0, 3).join('・') || '—';
+
+  var el = document.getElementById('obachan-card-settings');
+  if (el) {
+    el.innerHTML =
+      '<div class="obachan-setting-row"><span class="obachan-setting-label">今日の目的</span><span class="obachan-setting-value">' + escapeHtml(purposeLabel) + '</span></div>' +
+      '<div class="obachan-setting-row"><span class="obachan-setting-label">話せる時間</span><span class="obachan-setting-value">' + escapeHtml(timeLabel) + '</span></div>' +
+      '<div class="obachan-setting-row"><span class="obachan-setting-label">OK話題</span><span class="obachan-setting-value">' + escapeHtml(okText) + '</span></div>' +
+      '<div class="obachan-setting-row"><span class="obachan-setting-label">NG話題</span><span class="obachan-setting-value">' + escapeHtml(ngText) + '</span></div>';
+  }
+}
+
+// おばちゃんカードから「この設定で茶の間へ」
+function goToMatchWaiting() {
+  goTo('screen-match-waiting');
+  // 1.2秒後に会話部屋へ
+  setTimeout(function() {
+    state.matching.matchStatus = 'matched';
+    // roomConfig を作成
+    state.roomConfig = {
+      purpose:         state.matching.purpose,
+      talkTime:        state.matching.talkTime,
+      talkTemperature: state.matching.talkTemperature,
+      okTopics:        state.matching.okTopics.slice(),
+      ngTopics:        state.matching.ngTopics.slice()
+    };
+    enterRoomFromWaitingRoom();
+  }, 1200);
+}
+
+// 待合室フローから会話部屋へ入室
+function enterRoomFromWaitingRoom() {
+  var cfg = state.roomConfig;
+  if (!cfg) return;
+
+  // roomBoundary を roomConfig から構築
+  roomBoundary = {
+    strictestRules: {},
+    sharedOkTopics: cfg.okTopics.slice(),
+    blockedTopics:  cfg.ngTopics.slice(),
+    obasanMode:     'on_call',
+    emergencyEnabled: true
+  };
+
+  // state初期化
+  state.roomStarted = true;
+  state.obasanInRoom = true;
+  state.roomMessages = [];
+  state.roomFirstMessageSent = false;
+  state.roomCalledObasan = false;
+  state.selectedPartnerKey = 'gentle'; // 仮想相手（デフォルト）
+
+  // room / uiState 初期化
+  room.mode = 'normal';
+  uiState.obasan.summoned = false;
+  uiState.obasan.mode = 'idle';
+  uiState.obasan.selectedAction = null;
+  uiState.obasan.helperMode = null;
+  uiState.assistantTeam.activeCharacterId = null;
+  uiState.assistantTeam.activeIssueType   = null;
+  uiState.assistantTeam.lastCharacterId   = null;
+  uiState.assistantTeam.statusVisible     = false;
+  uiState.assistantTeam.helpMenuOpen      = false;
+  var statusCardEl = document.getElementById('assistant-status-card');
+  if (statusCardEl) { statusCardEl.classList.add('hidden'); statusCardEl.innerHTML = ''; }
+  var helpMenuRoot = document.getElementById('help-menu-root');
+  if (helpMenuRoot) helpMenuRoot.innerHTML = '';
+
+  // 画面移動
+  goTo('screen-room');
+
+  // DOMリセット
+  var container = document.getElementById('chat-container');
+  if (container) container.innerHTML = '';
+  var choiceList = document.getElementById('room-choice-list');
+  if (choiceList) { choiceList.innerHTML = ''; choiceList.classList.add('hidden'); }
+  var endArea = document.getElementById('room-end-area');
+  if (endArea) endArea.classList.add('hidden');
+  var statusBar = document.getElementById('room-status-bar');
+  if (statusBar) statusBar.classList.remove('mode-decompressing', 'mode-waiting', 'mode-closing');
+  hideAllAmidaPanels();
+
+  // ルーム情報バー更新（roomConfigから）
+  updateRoomInfoBarFromConfig();
+
+  // ヘッダータイトル
+  var titleEl = document.getElementById('room-header-title');
+  if (titleEl) titleEl.textContent = '👵🏻 茶の間';
+
+  // おばちゃんモード表示
+  var modeEl = document.getElementById('room-obasan-mode');
+  if (modeEl) modeEl.textContent = '困った時だけ助ける';
+
+  // スポンサー表示
+  var sponsorEl = document.getElementById('sponsor-bar-room');
+  if (sponsorEl) sponsorEl.classList.remove('hidden');
+
+  // 入力欄を非表示（おばちゃんウェルカム待ち）
+  var inputArea = document.getElementById('room-input-area');
+  if (inputArea) inputArea.classList.add('hidden');
+  updateStatusBar('おばちゃんが場を整えています…');
+
+  // テキストエリアリセット
+  var textarea = document.getElementById('room-input-textarea');
+  if (textarea) { textarea.value = ''; textarea.style.height = ''; }
+  state.roomDraftMessage = '';
+
+  // おばちゃんウェルカムメッセージ
+  var purposeOpt = PURPOSE_OPTIONS.find(function(p) { return p.id === cfg.purpose; });
+  var purposeLabel = purposeOpt ? purposeOpt.label : '話す';
+  var okDisplay = cfg.okTopics.slice(0, 3).join('・') || 'なんでも';
+  var ngDisplay = cfg.ngTopics.slice(0, 3).join('・') || '特になし';
+
+  addMessage('obasan',
+    'ほな、茶の間を用意したよ。\nゆっくりしていきなはれ🍵',
+    600
+  ).then(function() {
+    return addMessage('obasan',
+      '今日の目的：' + purposeLabel + '\nOK話題：' + okDisplay + '\nNG話題：' + ngDisplay,
+      2000
+    );
+  }).then(function() {
+    return addMessage('obasan',
+      'ほな、おばちゃんはいったん下がるわ。\n困ったら「👵🏻 助け舟」ボタンを押してな。',
+      4000
+    );
+  }).then(function() {
+    setRoomUIState(false);
+  });
+}
+
+// roomConfig から情報バーを更新
+function updateRoomInfoBarFromConfig() {
+  var cfg = state.roomConfig;
+  if (!cfg) return;
+  var okEl = document.getElementById('room-ok-topics');
+  var ngEl = document.getElementById('room-ng-topics');
+  var purposeOpt = PURPOSE_OPTIONS.find(function(p) { return p.id === cfg.purpose; });
+  if (okEl) okEl.textContent = (cfg.okTopics || []).slice(0, 3).join('・') || '—';
+  if (ngEl) ngEl.textContent = (cfg.ngTopics || []).slice(0, 3).join('・') || '—';
+  var modeEl = document.getElementById('room-obasan-mode');
+  if (modeEl && purposeOpt) modeEl.textContent = '目的「' + purposeOpt.label + '」';
+}
 
 // ===== 画面遷移 =====
 function goTo(screenId) {
@@ -1659,6 +1956,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Enterキーで送信しない（送信ボタンのみ送信）
   // ============================================================
 
+  let isComposing = false;
+
   // 入力欄のイベントは startVirtualRoom 実行後に登録する必要があるため
   // 入力欄が存在する場合は即座に登録、ない場合は MutationObserver で監視
   function setupInputEvents() {
@@ -1666,16 +1965,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!textarea || textarea._iPhoneEventsAttached) return;
     textarea._iPhoneEventsAttached = true;
 
-    // 日本語変換中フラグ（Ver.0.5-D imefix2）
+    // 日本語変換中フラグ（IME対策：Ver.0.6-A-i2）
     textarea.addEventListener('compositionstart', () => {
+      isComposing = true;
       state.isComposingMessage = true;
     });
-    textarea.addEventListener('compositionupdate', () => {
-      // composition中はrenderしない。textareaのDOMを触らない。
-    });
     textarea.addEventListener('compositionend', () => {
+      isComposing = false;
       state.isComposingMessage = false;
-      // iOSではcompositionend直後のvalue反映が遅れることがあるため0遅延で保存
+      // iOSではcompositionend直後にvalue反映が遅れる場合があるため、0遅延で保存
       setTimeout(() => {
         state.roomDraftMessage = textarea.value;
       }, 0);
@@ -1690,15 +1988,16 @@ document.addEventListener('DOMContentLoaded', () => {
       textarea.style.height = Math.min(textarea.scrollHeight, maxH) + 'px';
     });
 
-    // Enterキー処理：IME変換中またはスマホでは送信しない（Ver.0.5-D imefix2）
+    // Enterキー処理：変換中またはスマホでは送信しない（IME対策：Ver.0.6-A-i2）
     textarea.addEventListener('keydown', (e) => {
       const composing =
+        isComposing ||
         state.isComposingMessage ||
         e.isComposing ||
         e.keyCode === 229;
 
       if (composing) {
-        // 日本語変換中のEnter/確定はIMEに任せる。preventDefault/render/送信しない。
+        // 日本語変換中のEnter/確定はIMEに任せる。送信・preventDefault・renderはしない。
         return;
       }
 
@@ -1707,7 +2006,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
           || (navigator.maxTouchPoints > 1);
         if (isMobile) {
-          // スマホではEnterを送信に使わない
+          // スマホではEnterを改行または変換確定として扱う（送信しない）
           return;
         }
         // PCでShift+Enterは改行
@@ -1725,10 +2024,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     textarea.addEventListener('focus', () => {
       document.body.classList.add('keyboard-active');
-      // 入力中は助け舟メニューを閉じる。ただしIME変換中はtextareaを再生成しない。
-      if (!state.isComposingMessage) {
-        closeHelpMenu();
-      }
+      // 入力中は助け舟メニューを閉じる
+      closeHelpMenu();
       // 入力欄が空なら下書きから復元（Ver.0.5-C）
       if (!textarea.value && state.roomDraftMessage) {
         textarea.value = state.roomDraftMessage;

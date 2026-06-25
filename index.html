@@ -35,7 +35,7 @@
         <button class="btn btn-primary" onclick="goTo('screen-torisetsu-intro')">
           👵🏻 トリセツを作る
         </button>
-        <button class="btn btn-secondary" onclick="goTo('screen-partner-select')">
+        <button class="btn btn-secondary" onclick="goToWaitingRoom()">
           仮想ルームを試してみる
         </button>
         <button class="btn btn-ghost" onclick="goTo('screen-complete-view')">
@@ -232,6 +232,227 @@
     </div>
 
     <!-- ========================================
+         待合室画面A: 待合室トップ（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-waiting-room" class="screen">
+      <div class="header-bar">
+        <button class="back-btn" onclick="goTo('screen-top')">← 戻る</button>
+        <span class="app-logo">YUUEKi.com</span>
+        <span style="width:48px"></span>
+      </div>
+
+      <div class="waiting-room-content">
+        <div class="waiting-room-hero">
+          <div class="waiting-room-emoji">👵🏻</div>
+          <h2 class="waiting-room-title">茶の間の待合室</h2>
+          <p class="waiting-room-sub">話す前に、今日の目的を整えましょう。</p>
+        </div>
+
+        <div class="waiting-room-desc">
+          <p>目的を言う自由。<br>断る自由。<br>見送られる安全。</p>
+          <p style="margin-top:8px;">今日の目的を最初から正直に置ける場所です。</p>
+        </div>
+
+        <div class="waiting-room-steps">
+          <div class="waiting-step">
+            <span class="waiting-step-num">1</span>
+            <span class="waiting-step-text">目的を選ぶ</span>
+          </div>
+          <div class="waiting-step-arrow">↓</div>
+          <div class="waiting-step">
+            <span class="waiting-step-num">2</span>
+            <span class="waiting-step-text">話せる時間を選ぶ</span>
+          </div>
+          <div class="waiting-step-arrow">↓</div>
+          <div class="waiting-step">
+            <span class="waiting-step-num">3</span>
+            <span class="waiting-step-text">おばちゃんのカードを確認</span>
+          </div>
+          <div class="waiting-step-arrow">↓</div>
+          <div class="waiting-step">
+            <span class="waiting-step-num">4</span>
+            <span class="waiting-step-text">茶の間へ</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="goToSelectPurpose()">
+          今日の目的を決める
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================
+         待合室画面B: 目的選択（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-select-purpose" class="screen">
+      <div class="header-bar">
+        <button class="back-btn" onclick="goTo('screen-waiting-room')">← 戻る</button>
+        <span class="app-logo">YUUEKi.com</span>
+        <span style="width:48px"></span>
+      </div>
+
+      <div class="screen-content">
+        <div class="screen-heading">
+          <h2 class="section-title">今日の目的は？</h2>
+          <p class="section-subtitle">正直に置いてください。相手には最初から見えます。</p>
+        </div>
+
+        <div class="purpose-list">
+          <button class="purpose-card" onclick="selectPurpose('talk')">
+            <span class="purpose-card-label">ただ話したい</span>
+            <span class="purpose-card-sub">日常や軽い雑談をしたい</span>
+          </button>
+          <button class="purpose-card" onclick="selectPurpose('friend')">
+            <span class="purpose-card-label">友達・趣味の話</span>
+            <span class="purpose-card-sub">気の合う人とゆっくり話したい</span>
+          </button>
+          <button class="purpose-card" onclick="selectPurpose('date')">
+            <span class="purpose-card-label">恋人・パートナー探し</span>
+            <span class="purpose-card-sub">真面目に出会いの可能性を見たい</span>
+          </button>
+          <button class="purpose-card" onclick="selectPurpose('lonely')">
+            <span class="purpose-card-label">今日はちょっと寂しい</span>
+            <span class="purpose-card-sub">ただ誰かの気配がほしい</span>
+          </button>
+          <button class="purpose-card" onclick="selectPurpose('short')">
+            <span class="purpose-card-label">短時間だけ話したい</span>
+            <span class="purpose-card-sub">少しだけ誰かと話したい</span>
+          </button>
+          <button class="purpose-card purpose-card--sex" onclick="selectPurpose('sex')">
+            <span class="purpose-card-label">セックスパートナーを探したい</span>
+            <span class="purpose-card-sub">成人同士・目的一致・断る自由が前提</span>
+          </button>
+          <button class="purpose-card purpose-card--undecided" onclick="selectPurpose('undecided')">
+            <span class="purpose-card-label">まだ決まっていない</span>
+            <span class="purpose-card-sub">おばちゃんと一緒に整理したい</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         待合室画面B-sex: セックス目的確認（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-sex-confirm" class="screen">
+      <div class="header-bar">
+        <button class="back-btn" onclick="cancelSexPurpose()">← 戻る</button>
+        <span class="app-logo">YUUEKi.com</span>
+        <span style="width:48px"></span>
+      </div>
+
+      <div class="screen-content">
+        <div class="sex-confirm-card">
+          <div class="sex-confirm-icon">👋🏻</div>
+          <h2 class="sex-confirm-title">確認してください</h2>
+          <div class="sex-confirm-body">
+            <p>この目的は、成人同士の同意と目的一致が前提です。</p>
+            <p style="margin-top:8px;">相手には断る自由があります。<br>断られても责めない、急かさない、境界線を守る。<br>それを守れる場合だけ、この目的で進んでください。</p>
+          </div>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="confirmSexPurpose()">
+            理解して進む
+          </button>
+          <button class="btn btn-ghost" style="margin-top:8px;" onclick="cancelSexPurpose()">
+            別の目的を選ぶ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         待合室画面C: 話せる時間選択（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-select-time" class="screen">
+      <div class="header-bar">
+        <button class="back-btn" onclick="goTo('screen-select-purpose')">← 戻る</button>
+        <span class="app-logo">YUUEKi.com</span>
+        <span style="width:48px"></span>
+      </div>
+
+      <div class="screen-content">
+        <div class="screen-heading">
+          <h2 class="section-title">話せる時間は？</h2>
+          <p class="section-subtitle">相手に最初から伝わります。</p>
+        </div>
+
+        <div class="talktime-list">
+          <button class="talktime-card" onclick="selectTalkTime('five')">
+            <span class="talktime-card-label">5分だけ</span>
+            <span class="talktime-card-sub">ほんの少しだけ</span>
+          </button>
+          <button class="talktime-card" onclick="selectTalkTime('ten')">
+            <span class="talktime-card-label">10分くらい</span>
+            <span class="talktime-card-sub">軽く話す</span>
+          </button>
+          <button class="talktime-card" onclick="selectTalkTime('thirty')">
+            <span class="talktime-card-label">30分くらい</span>
+            <span class="talktime-card-sub">お茶一杯分</span>
+          </button>
+          <button class="talktime-card" onclick="selectTalkTime('slow')">
+            <span class="talktime-card-label">のんびり</span>
+            <span class="talktime-card-sub">急がず話す</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         待合室画面D: おばちゃん紹介カード（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-obachan-card" class="screen">
+      <div class="header-bar">
+        <button class="back-btn" onclick="goTo('screen-select-time')">← 戻る</button>
+        <span class="app-logo">YUUEKi.com</span>
+        <span style="width:48px"></span>
+      </div>
+
+      <div class="screen-content">
+        <div class="obachan-intro-card">
+          <div class="obachan-intro-header">
+            <span class="obachan-intro-emoji">👵🏻</span>
+            <span class="obachan-intro-name">つながろおばちゃん</span>
+          </div>
+          <div class="obachan-intro-body">
+            <p>ワシはつながろおばちゃん。<br>
+            会話がピタッと止まったり、<br>
+            なんか違うな、やめたいなと思った時は、<br>
+            遠慮なくワシを呼びなはれ。</p>
+            <p style="margin-top:8px;">間に入って、空気を少しゆるめるで。<br>用が済んだら、すぐ帰るからな🍵</p>
+          </div>
+        </div>
+
+        <div class="obachan-settings-block">
+          <div class="obachan-settings-title">今回の設定</div>
+          <div id="obachan-card-settings">
+            <!-- JSのrenderObachanCard()で動的に描画 -->
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="goToMatchWaiting()">
+          この設定で茶の間へ
+        </button>
+        <button class="btn btn-ghost" style="margin-top:8px;" onclick="goToSelectPurpose()">
+          目的を選び直す
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================
+         待合室画面E: 相手確認中（Ver.0.6-A）
+    ========================================= -->
+    <div id="screen-match-waiting" class="screen">
+      <div class="match-waiting-content">
+        <div class="match-waiting-emoji">🍵</div>
+        <p class="match-waiting-text">おばちゃんが茶の間を整えています…</p>
+        <p class="match-waiting-sub">少しだけお待ちください🍵</p>
+        <div class="match-waiting-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
          画面6: 仮想相手選択画面
     ========================================= -->
     <div id="screen-partner-select" class="screen">
@@ -263,9 +484,9 @@
     ========================================= -->
     <div id="screen-room" class="screen">
       <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-partner-select')">← 戻る</button>
+        <button class="back-btn" onclick="goTo('screen-waiting-room')">← 戻る</button>
         <span class="app-logo" id="room-header-title">👵🏻 一対一ルーム</span>
-        <span class="room-version">v0.5D-i2</span>
+        <span class="room-version">v0.6A-i2</span>
       </div>
 
       <!-- スポンサー枠（仮） -->

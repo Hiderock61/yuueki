@@ -2745,26 +2745,389 @@ body.keyboard-active .sponsor-bar-room {
 }
 
 /* ============================================================
-   Ver.0.5-D imefix2 final safety polish
+   Ver.0.6-A waiting-room — 待合室フロー画面スタイル
    ============================================================ */
-.room-version,
-.room-header-version {
-  width: auto !important;
-  max-width: 64px !important;
-  text-align: right !important;
-  white-space: nowrap !important;
-  font-size: 9.5px !important;
-  line-height: 1 !important;
+
+/* ===== 待合室トップ（screen-waiting-room）===== */
+
+.waiting-room-content {
+  padding: 16px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.header-bar {
-  min-height: 42px !important;
+
+.waiting-room-hero {
+  text-align: center;
+  padding: 12px 0 4px;
 }
-.room-info-bar {
-  min-height: 30px !important;
+
+.waiting-room-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 8px;
 }
-.room-info-item {
-  flex: 0 0 33.33% !important;
+
+.waiting-room-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3a2a1a;
+  margin: 0 0 4px;
 }
-.message-body {
-  max-width: 100%;
+
+.waiting-room-sub {
+  font-size: 0.85rem;
+  color: #7a6a5a;
+  margin: 0;
+}
+
+.waiting-room-desc {
+  background: #faf3e8;
+  border-left: 3px solid #c8a96e;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: #4a3a2a;
+  line-height: 1.7;
+}
+
+.waiting-room-steps {
+  background: #fff;
+  border: 1px solid #e8ddd0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.waiting-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.waiting-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #c8a96e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.waiting-step-text {
+  font-size: 0.88rem;
+  color: #3a2a1a;
+}
+
+.waiting-step-arrow {
+  text-align: center;
+  color: #c8a96e;
+  font-size: 0.85rem;
+  padding: 0 0 0 10px;
+  line-height: 1;
+}
+
+/* ===== 目的選択（screen-select-purpose）===== */
+
+.screen-heading {
+  margin-bottom: 4px;
+}
+
+.purpose-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
+.purpose-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e0d4c4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.purpose-card:active,
+.purpose-card:hover {
+  border-color: #c8a96e;
+  background: #fdf8f0;
+}
+
+.purpose-card-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3a2a1a;
+  line-height: 1.3;
+}
+
+.purpose-card-sub {
+  font-size: 0.78rem;
+  color: #8a7a6a;
+  line-height: 1.4;
+}
+
+.purpose-card--sex {
+  border-color: #d4b8a0;
+  background: #fdf9f5;
+}
+
+.purpose-card--sex:active,
+.purpose-card--sex:hover {
+  border-color: #b08060;
+  background: #faf0e6;
+}
+
+.purpose-card--sex .purpose-card-label {
+  color: #5a3a2a;
+}
+
+.purpose-card--undecided {
+  border-style: dashed;
+  border-color: #c8b89a;
+  background: #fdfbf7;
+}
+
+.purpose-card--undecided:active,
+.purpose-card--undecided:hover {
+  border-color: #a89070;
+  background: #faf6ee;
+}
+
+/* ===== セックス目的確認カード（screen-sex-confirm）===== */
+
+.sex-confirm-card {
+  background: #fff;
+  border: 1.5px solid #d4b8a0;
+  border-radius: 12px;
+  padding: 20px 16px;
+  margin: 8px 0;
+  text-align: center;
+}
+
+.sex-confirm-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.sex-confirm-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #3a2a1a;
+  margin: 0 0 12px;
+}
+
+.sex-confirm-body {
+  font-size: 0.88rem;
+  color: #4a3a2a;
+  line-height: 1.7;
+  text-align: left;
+}
+
+/* ===== 話せる時間選択（screen-select-time）===== */
+
+.talktime-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
+.talktime-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e0d4c4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.talktime-card:active,
+.talktime-card:hover {
+  border-color: #c8a96e;
+  background: #fdf8f0;
+}
+
+.talktime-card-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3a2a1a;
+  line-height: 1.3;
+}
+
+.talktime-card-sub {
+  font-size: 0.78rem;
+  color: #8a7a6a;
+  line-height: 1.4;
+}
+
+/* ===== おばちゃん紹介カード（screen-obachan-card）===== */
+
+.obachan-intro-card {
+  background: #fdf8f0;
+  border: 1.5px solid #c8a96e;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.obachan-intro-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.obachan-intro-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.obachan-intro-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #3a2a1a;
+}
+
+.obachan-intro-body {
+  font-size: 0.86rem;
+  color: #4a3a2a;
+  line-height: 1.7;
+}
+
+.obachan-settings-block {
+  background: #fff;
+  border: 1px solid #e0d4c4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+}
+
+.obachan-settings-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #8a7a6a;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.obachan-setting-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0e8dc;
+  font-size: 0.84rem;
+}
+
+.obachan-setting-row:last-child {
+  border-bottom: none;
+}
+
+.obachan-setting-label {
+  color: #8a7a6a;
+  flex-shrink: 0;
+  min-width: 72px;
+  font-size: 0.78rem;
+}
+
+.obachan-setting-value {
+  color: #3a2a1a;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* ===== 相手確認中（screen-match-waiting）===== */
+
+#screen-match-waiting {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#screen-match-waiting.active {
+  display: flex;
+}
+
+.match-waiting-content {
+  text-align: center;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.match-waiting-emoji {
+  font-size: 3rem;
+  animation: match-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes match-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.08); opacity: 0.85; }
+}
+
+.match-waiting-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3a2a1a;
+  margin: 0;
+}
+
+.match-waiting-sub {
+  font-size: 0.85rem;
+  color: #7a6a5a;
+  margin: 0;
+}
+
+.match-waiting-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.match-waiting-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c8a96e;
+  animation: dot-bounce 1.2s ease-in-out infinite;
+}
+
+.match-waiting-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.match-waiting-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40%           { transform: translateY(-6px); opacity: 1; }
 }
