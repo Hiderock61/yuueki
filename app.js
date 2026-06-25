@@ -787,10 +787,18 @@ function addMessage(type, text, delay, metaOrCharOpts) {
       state.roomMessages.push(msg);
 
       container.appendChild(msgEl);
-      container.scrollTop = container.scrollHeight;
+      scrollToBottom();
       resolve();
     }, delay || 0);
   });
+}
+
+// ----- チャットログを最新メッセージまでスクロール -----
+// iPhoneキーボード表示後のレイアウト確定を待ってから呼び出すこと（setTimeout併用）
+function scrollToBottom() {
+  const container = document.getElementById('chat-container');
+  if (!container) return;
+  container.scrollTop = container.scrollHeight;
 }
 
 // ----- 状態バー更新 -----
@@ -850,8 +858,7 @@ function showChoices(choices) {
     list.appendChild(btn);
   });
 
-  const container = document.getElementById('chat-container');
-  if (container) container.scrollTop = container.scrollHeight;
+  setTimeout(scrollToBottom, 50);
 }
 
 // ----- 自分のメッセージ送信 -----
@@ -876,6 +883,8 @@ function sendMyMessage() {
   addMessage('user', text, 0);
   textarea.value = '';
   state.roomDraftMessage = ''; // 送信成功後だけドラフトをクリア
+  // 送信後に最新メッセージへスクロール（レイアウト確定待ち）
+  setTimeout(scrollToBottom, 50);
 
   // 初回送信時のみ相手のモック返信
   if (!state.roomFirstMessageSent) {
@@ -938,7 +947,7 @@ function handleObasanAction(actionId) {
       if (inputArea) inputArea.classList.remove('hidden');
       state.roomCalledObasan = false;
       const container = document.getElementById('chat-container');
-      if (container) container.scrollTop = container.scrollHeight;
+      setTimeout(scrollToBottom, 50);
     });
 
   } else if (actionId === 'change_topic') {
@@ -955,7 +964,7 @@ function handleObasanAction(actionId) {
       if (inputArea) inputArea.classList.remove('hidden');
       uiState.obasan.mode = 'idle';
       const container = document.getElementById('chat-container');
-      if (container) container.scrollTop = container.scrollHeight;
+      setTimeout(scrollToBottom, 50);
     });
 
   } else if (actionId === 'obasan_join') {
@@ -972,7 +981,7 @@ function handleObasanAction(actionId) {
       state.roomCalledObasan = false;
       if (inputArea) inputArea.classList.remove('hidden');
       const container = document.getElementById('chat-container');
-      if (container) container.scrollTop = container.scrollHeight;
+      setTimeout(scrollToBottom, 50);
     });
 
   } else if (actionId === 'close_today') {
@@ -990,7 +999,7 @@ function handleObasanAction(actionId) {
       const endArea = document.getElementById('room-end-area');
       if (endArea) endArea.classList.remove('hidden');
       const container = document.getElementById('chat-container');
-      if (container) container.scrollTop = container.scrollHeight;
+      setTimeout(scrollToBottom, 50);
     });
   }
 }
@@ -1107,7 +1116,7 @@ function handleIssueButtonClick(issueType) {
         if (inputArea) inputArea.classList.remove('hidden');
       }
     const container = document.getElementById('chat-container');
-    if (container) container.scrollTop = container.scrollHeight;
+    setTimeout(scrollToBottom, 50);
   });
 }
 
@@ -1283,7 +1292,7 @@ function onRiskCheckOk() {
       inputPanel.classList.remove('hidden');
     }
     const container = document.getElementById('chat-container');
-    if (container) container.scrollTop = container.scrollHeight;
+    setTimeout(scrollToBottom, 50);
   });
 }
 
@@ -1400,13 +1409,13 @@ function runAmida() {
         uiState.obasan.helperMode = null;
         updateStatusBar('あとはお二人で');
         const container = document.getElementById('chat-container');
-        if (container) container.scrollTop = container.scrollHeight;
+        setTimeout(scrollToBottom, 50);
       };
       list.appendChild(retryBtn);
       list.appendChild(okBtn);
     }
     const container = document.getElementById('chat-container');
-    if (container) container.scrollTop = container.scrollHeight;
+    setTimeout(scrollToBottom, 50);
   });
 }
 
@@ -1418,7 +1427,7 @@ function cancelAmida() {
   uiState.obasan.helperMode = null;
   updateStatusBar('あとはお二人で');
   const container = document.getElementById('chat-container');
-  if (container) container.scrollTop = container.scrollHeight;
+  setTimeout(scrollToBottom, 50);
 }
 
 // ============================================================
@@ -1703,6 +1712,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!textarea.value && state.roomDraftMessage) {
         textarea.value = state.roomDraftMessage;
       }
+      // キーボード表示後のレイアウト確定を待ってから最新メッセージへスクロール
+      setTimeout(scrollToBottom, 80);
     });
 
     // blur：下書き保存 + keyboard-active除去（Ver.0.5-C統合版）
