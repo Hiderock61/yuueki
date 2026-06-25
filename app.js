@@ -83,7 +83,9 @@ const state = {
   // ふりかえり
   reviewAnswers: {},
   // 入力下書き（iPhone日本語入力対策：Ver.0.5-C）
-  roomDraftMessage: ""
+  roomDraftMessage: "",
+  // 日本語IME変換中フラグ（iPhone Enter確定時の未確定文字消失対策：imefix）
+  isComposingMessage: false
 };
 
 // ===== オノノケ縁側システム（Ver.0.5-A）=====
@@ -1131,6 +1133,9 @@ function toggleHelpMenu() {
 }
 
 function closeHelpMenu() {
+  // メニューが閉じている時はDOMを触らない。
+  // iPhone日本語IME入力中に不要な再描画を起こさないための保険。
+  if (!uiState.assistantTeam.helpMenuOpen) return;
   uiState.assistantTeam.helpMenuOpen = false;
   renderHelpMenu();
 }
@@ -1655,8 +1660,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Enterキーで送信しない（送信ボタンのみ送信）
   // ============================================================
 
-  let isComposing = false;
-
   // 入力欄のイベントは startVirtualRoom 実行後に登録する必要があるため
   // 入力欄が存在する場合は即座に登録、ない場合は MutationObserver で監視
   function setupInputEvents() {
@@ -1664,14 +1667,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!textarea || textarea._iPhoneEventsAttached) return;
     textarea._iPhoneEventsAttached = true;
 
-    // 日本語変換中フラグ
+    // 日本語IME変換中フラグ（iPhone Enter確定時に未確定文字を消さない）
     textarea.addEventListener('compositionstart', () => {
-      isComposing = true;
+      state.isComposingMessage = true;
     });
+
+    textarea.addEventListener('compositionupdate', () => {
+      // composition中はrenderしない。
+      // textareaを再生成・上書きしないことが床を守る。
+    });
+
     textarea.addEventListener('compositionend', () => {
-      isComposing = false;
-      // 変換確定後も下書きを保存（Ver.0.5-C）
-      state.roomDraftMessage = textarea.value;
+      state.isComposingMessage = false;
+      // iOSではcompositionend直後にvalue更新が遅れることがあるため0遅延で保存
+      setTimeout(() => {
+        state.roomDraftMessage = textarea.value;
+      }, 0);
+    });
+
+    // beforeinputではrenderしない。IMEの確定処理を邪魔しない。
+    textarea.addEventListener('beforeinput', () => {
+      // no render
     });
 
     // 入力イベント：入力のたびに下書きを保存（Ver.0.5-C）
@@ -1679,16 +1695,24 @@ document.addEventListener('DOMContentLoaded', () => {
       state.roomDraftMessage = textarea.value;
     });
 
-    // Enterキー処理：変換中またはスマホでは送信しない
+    // Enterキー処理：IME変換中は完全にIMEへ任せる。スマホでは送信しない。
     textarea.addEventListener('keydown', (e) => {
+      const composing =
+        state.isComposingMessage ||
+        e.isComposing ||
+        e.keyCode === 229;
+
+      if (composing) {
+        // 日本語変換中のEnter/returnは変換確定。preventDefaultも送信もrenderもしない。
+        return;
+      }
+
       if (e.key === 'Enter') {
-        // 変換中は絶対に送信しない
-        if (isComposing) return;
         // スマホ判定：タッチデバイス or UAで判定
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
           || (navigator.maxTouchPoints > 1);
         if (isMobile) {
-          // スマホではEnterを改行または変換確定として扱う（送信しない）
+          // スマホではEnterを改行または確定操作として扱う（送信しない）
           return;
         }
         // PCでShift+Enterは改行
@@ -1706,8 +1730,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     textarea.addEventListener('focus', () => {
       document.body.classList.add('keyboard-active');
-      // 入力中は助け舟メニューを閉じる
-      closeHelpMenu();
+      // 入力中は助け舟メニューを閉じる。ただし閉じている時はDOMを触らない。
+      if (!state.isComposingMessage) {
+        closeHelpMenu();
+      }
       // 入力欄が空なら下書きから復元（Ver.0.5-C）
       if (!textarea.value && state.roomDraftMessage) {
         textarea.value = state.roomDraftMessage;
