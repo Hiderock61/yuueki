@@ -84,7 +84,7 @@ const state = {
   reviewAnswers: {},
   // 入力下書き（iPhone日本語入力対策：Ver.0.5-C）
   roomDraftMessage: "",
-  // 日本語IME変換中フラグ（iPhone Enter確定時の文字消失対策：uisafe-imefix2）
+  // 日本語IME変換中フラグ（Ver.0.5-D imefix2）
   isComposingMessage: false
 };
 
@@ -1181,7 +1181,6 @@ function toggleHelperMenu() {
 }
 
 function closeHelperMenu() {
-  if (!uiState.assistantTeam.helpMenuOpen) return;
   uiState.assistantTeam.helpMenuOpen = false;
   renderHelpMenu();
 }
@@ -1667,33 +1666,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!textarea || textarea._iPhoneEventsAttached) return;
     textarea._iPhoneEventsAttached = true;
 
-    // 日本語変換中フラグ（iPhone IME Enter確定時の文字消失対策）
+    // 日本語変換中フラグ（Ver.0.5-D imefix2）
     textarea.addEventListener('compositionstart', () => {
       state.isComposingMessage = true;
     });
-
     textarea.addEventListener('compositionupdate', () => {
-      // composition中はrenderしない。textareaをDOM上に残す。
+      // composition中はrenderしない。textareaのDOMを触らない。
     });
-
     textarea.addEventListener('compositionend', () => {
       state.isComposingMessage = false;
-      // iOSではcompositionend直後にvalue反映が遅れる場合があるため、0遅延で保存
+      // iOSではcompositionend直後のvalue反映が遅れることがあるため0遅延で保存
       setTimeout(() => {
         state.roomDraftMessage = textarea.value;
       }, 0);
     });
 
-    // 入力イベント：入力のたびに下書きを保存（Ver.0.5-C）
+    // 入力イベント：入力のたびに下書きを保存（Ver.0.5-C）＋auto-grow最大3行（Ver.0.5-D）
     textarea.addEventListener('input', () => {
       state.roomDraftMessage = textarea.value;
+      // auto-grow: 最大3行（72px）まで自動拡張
+      textarea.style.height = 'auto';
+      const maxH = 72; // 約3行
+      textarea.style.height = Math.min(textarea.scrollHeight, maxH) + 'px';
     });
 
-    textarea.addEventListener('beforeinput', () => {
-      // ここではrenderしない。IME未確定文字を守る。
-    });
-
-    // Enterキー処理：変換中またはスマホでは送信しない
+    // Enterキー処理：IME変換中またはスマホでは送信しない（Ver.0.5-D imefix2）
     textarea.addEventListener('keydown', (e) => {
       const composing =
         state.isComposingMessage ||
@@ -1701,7 +1698,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.keyCode === 229;
 
       if (composing) {
-        // 日本語変換中のEnter/確定はIMEに任せる。preventDefaultもrenderもしない。
+        // 日本語変換中のEnter/確定はIMEに任せる。preventDefault/render/送信しない。
         return;
       }
 
@@ -1728,7 +1725,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     textarea.addEventListener('focus', () => {
       document.body.classList.add('keyboard-active');
-      // 入力中は助け舟メニューを閉じる。ただし閉じている時はDOMを触らない。
+      // 入力中は助け舟メニューを閉じる。ただしIME変換中はtextareaを再生成しない。
       if (!state.isComposingMessage) {
         closeHelpMenu();
       }
