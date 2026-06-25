@@ -84,7 +84,7 @@ const state = {
   reviewAnswers: {},
   // 入力下書き（iPhone日本語入力対策：Ver.0.5-C）
   roomDraftMessage: "",
-  // 日本語IME変換中フラグ（iPhone Enter確定時の未確定文字消失対策：imefix）
+  // 日本語IME変換中フラグ（iPhone Enter確定時の文字消失対策：uisafe-imefix2）
   isComposingMessage: false
 };
 
@@ -885,8 +885,9 @@ function sendMyMessage() {
   addMessage('user', text, 0);
   textarea.value = '';
   state.roomDraftMessage = ''; // 送信成功後だけドラフトをクリア
-  // 送信後に最新メッセージへスクロール（レイアウト確定待ち）
-  setTimeout(scrollToBottom, 50);
+  // 送信後に最新メッセージへスクロール（レイアウト確定待ち，iPhone Safari対応の二重遅延）
+  setTimeout(scrollToBottom, 80);
+  setTimeout(scrollToBottom, 180);
 
   // 初回送信時のみ相手のモック返信
   if (!state.roomFirstMessageSent) {
@@ -1133,8 +1134,6 @@ function toggleHelpMenu() {
 }
 
 function closeHelpMenu() {
-  // メニューが閉じている時はDOMを触らない。
-  // iPhone日本語IME入力中に不要な再描画を起こさないための保険。
   if (!uiState.assistantTeam.helpMenuOpen) return;
   uiState.assistantTeam.helpMenuOpen = false;
   renderHelpMenu();
@@ -1182,6 +1181,7 @@ function toggleHelperMenu() {
 }
 
 function closeHelperMenu() {
+  if (!uiState.assistantTeam.helpMenuOpen) return;
   uiState.assistantTeam.helpMenuOpen = false;
   renderHelpMenu();
 }
@@ -1667,27 +1667,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!textarea || textarea._iPhoneEventsAttached) return;
     textarea._iPhoneEventsAttached = true;
 
-    // 日本語IME変換中フラグ（iPhone Enter確定時に未確定文字を消さない）
+    // 日本語変換中フラグ（iPhone IME Enter確定時の文字消失対策）
     textarea.addEventListener('compositionstart', () => {
       state.isComposingMessage = true;
     });
 
     textarea.addEventListener('compositionupdate', () => {
-      // composition中はrenderしない。
-      // textareaを再生成・上書きしないことが床を守る。
+      // composition中はrenderしない。textareaをDOM上に残す。
     });
 
     textarea.addEventListener('compositionend', () => {
       state.isComposingMessage = false;
-      // iOSではcompositionend直後にvalue更新が遅れることがあるため0遅延で保存
+      // iOSではcompositionend直後にvalue反映が遅れる場合があるため、0遅延で保存
       setTimeout(() => {
         state.roomDraftMessage = textarea.value;
       }, 0);
-    });
-
-    // beforeinputではrenderしない。IMEの確定処理を邪魔しない。
-    textarea.addEventListener('beforeinput', () => {
-      // no render
     });
 
     // 入力イベント：入力のたびに下書きを保存（Ver.0.5-C）
@@ -1695,7 +1689,11 @@ document.addEventListener('DOMContentLoaded', () => {
       state.roomDraftMessage = textarea.value;
     });
 
-    // Enterキー処理：IME変換中は完全にIMEへ任せる。スマホでは送信しない。
+    textarea.addEventListener('beforeinput', () => {
+      // ここではrenderしない。IME未確定文字を守る。
+    });
+
+    // Enterキー処理：変換中またはスマホでは送信しない
     textarea.addEventListener('keydown', (e) => {
       const composing =
         state.isComposingMessage ||
@@ -1703,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.keyCode === 229;
 
       if (composing) {
-        // 日本語変換中のEnter/returnは変換確定。preventDefaultも送信もrenderもしない。
+        // 日本語変換中のEnter/確定はIMEに任せる。preventDefaultもrenderもしない。
         return;
       }
 
@@ -1712,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
           || (navigator.maxTouchPoints > 1);
         if (isMobile) {
-          // スマホではEnterを改行または確定操作として扱う（送信しない）
+          // スマホではEnterを送信に使わない
           return;
         }
         // PCでShift+Enterは改行
