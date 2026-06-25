@@ -634,11 +634,18 @@ function updateRoomInfoBarFromConfig() {
   if (!cfg) return;
   var okEl = document.getElementById('room-ok-topics');
   var ngEl = document.getElementById('room-ng-topics');
-  var purposeOpt = PURPOSE_OPTIONS.find(function(p) { return p.id === cfg.purpose; });
-  if (okEl) okEl.textContent = (cfg.okTopics || []).slice(0, 3).join('・') || '—';
-  if (ngEl) ngEl.textContent = (cfg.ngTopics || []).slice(0, 3).join('・') || '—';
   var modeEl = document.getElementById('room-obasan-mode');
-  if (modeEl && purposeOpt) modeEl.textContent = '目的「' + purposeOpt.label + '」';
+  var purposeOpt = PURPOSE_OPTIONS.find(function(p) { return p.id === cfg.purpose; });
+  var timeOpt = TALK_TIME_OPTIONS.find(function(t) { return t.id === cfg.talkTime; });
+  var okText = (cfg.okTopics || []).slice(0, 2).join('・') || '—';
+  var ngText = (cfg.ngTopics || []).slice(0, 2).join('・') || '—';
+  if (okEl) okEl.textContent = okText;
+  if (ngEl) ngEl.textContent = ngText;
+  if (modeEl) {
+    var purposeText = purposeOpt ? purposeOpt.label.replace('セックスパートナーを探したい', 'SP目的') : '目的未設定';
+    var timeText = timeOpt ? timeOpt.label : '';
+    modeEl.textContent = (timeText ? purposeText + ' / ' + timeText : purposeText);
+  }
 }
 
 // ===== 画面遷移 =====
