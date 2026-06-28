@@ -1,7 +1,7 @@
 'use strict';
 
 // ============================================================
-// YUUEKi.com Ver.0.6-A-i2 — app.js
+// YUUEKi.com Ver.0.6B-helper-options — app.js
 // ============================================================
 
 // ===== データモデル =====
@@ -66,6 +66,23 @@ const OBASAN_ACTIONS = [
   { id: 'close_today',  label: '今日はここまでにする' }
 ];
 
+// ===== 助け舟候補文（Ver.0.6B）=====
+// 候補文はonclick文字列に直接埋め込まず、type + indexで扱う。
+const HELPER_DRAFT_OPTIONS = {
+  topic: [
+    '最近食べたものでよかったやつある？',
+    '音楽か映画の話にしてみる？'
+  ],
+  wait: [
+    '少しだけ考える時間ください。',
+    'ゆっくり返しても大丈夫ですか。'
+  ],
+  close: [
+    '今日はここまでにします。ありがとう。',
+    'また合う時があれば話しましょう。'
+  ]
+};
+
 // ===== 画面遷移状態 =====
 const state = {
   history: [],
@@ -98,7 +115,12 @@ const state = {
     matchStatus: "idle"
   },
   // 会話部屋設定（Ver.0.6-A）
-  roomConfig: null
+  roomConfig: null,
+  // 助け舟候補文パネル（Ver.0.6B）
+  helperDraftPanel: {
+    visible: false,
+    type: null
+  }
 };
 
 // ===== オノノケ縁側システム（Ver.0.5-A）=====
@@ -564,6 +586,7 @@ function enterRoomFromWaitingRoom() {
   if (statusCardEl) { statusCardEl.classList.add('hidden'); statusCardEl.innerHTML = ''; }
   var helpMenuRoot = document.getElementById('help-menu-root');
   if (helpMenuRoot) helpMenuRoot.innerHTML = '';
+  hideHelperDraftPanel();
 
   // 画面移動
   goTo('screen-room');
@@ -956,6 +979,7 @@ function startVirtualRoom() {
   // help-menu-rootもリセット
   const helpMenuRoot = document.getElementById('help-menu-root');
   if (helpMenuRoot) helpMenuRoot.innerHTML = '';
+  hideHelperDraftPanel();
 
   // 画面移動
   goTo('screen-room');
@@ -1431,6 +1455,130 @@ function handleIssueButtonClick(issueType) {
 // 迷ったら整理棚 ・ おばちゃんあみだ（Ver.0.4-A）
 // ============================================================
 
+// ----- 助け舟候補文パネル（Ver.0.6B）-----
+function getHelperDraftCandidates(type) {
+  if (type === 'goal') {
+    return [buildHelperGoalSummary()];
+  }
+  return HELPER_DRAFT_OPTIONS[type] || [];
+}
+
+function buildHelperGoalSummary() {
+  const cfg = state.roomConfig;
+  if (!cfg) return '目的：未設定';
+
+  const purposeOpt = PURPOSE_OPTIONS.find(p => p.id === cfg.purpose);
+  const purposeLabel = purposeOpt ? purposeOpt.label : (cfg.purpose || '未設定');
+  const timeOpt = TALK_TIME_OPTIONS.find(t => t.id === cfg.talkTime);
+  const timeLabel = timeOpt ? timeOpt.label : (cfg.talkTime || '未設定');
+  const okText = (cfg.okTopics || []).slice(0, 2).join('・') || 'なんでも';
+  const ngText = (cfg.ngTopics || []).slice(0, 2).join('・') || '特になし';
+
+  return '目的：' + purposeLabel + '\n時間：' + timeLabel + '\nOK：' + okText + ' / NG：' + ngText;
+}
+
+function showHelperDraftPanel(type) {
+  uiState.assistantTeam.helpMenuOpen = false;
+  state.helperDraftPanel.visible = true;
+  state.helperDraftPanel.type = type;
+  renderHelpMenu();
+  renderHelperDraftPanel();
+}
+
+function hideHelperDraftPanel() {
+  state.helperDraftPanel.visible = false;
+  state.helperDraftPanel.type = null;
+  const existing = document.getElementById('helper-draft-panel');
+  if (existing) existing.remove();
+}
+
+function insertHelperDraftCandidate(index) {
+  const type = state.helperDraftPanel.type;
+  const candidates = getHelperDraftCandidates(type);
+  const text = candidates[index];
+  if (!text || type === 'goal') return;
+
+  const textarea = document.getElementById('room-input-textarea');
+  if (!textarea) return;
+
+  textarea.value = text;
+  state.roomDraftMessage = text;
+  textarea.style.height = 'auto';
+  const maxH = 72;
+  textarea.style.height = Math.min(textarea.scrollHeight, maxH) + 'px';
+
+  hideHelperDraftPanel();
+
+  requestAnimationFrame(() => {
+    textarea.focus();
+    const len = textarea.value.length;
+    textarea.setSelectionRange(len, len);
+  });
+}
+
+function renderHelperDraftPanel() {
+  const inputArea = document.getElementById('room-input-area');
+  if (!inputArea) return;
+
+  let panel = document.getElementById('helper-draft-panel');
+  if (!state.helperDraftPanel.visible || !state.helperDraftPanel.type) {
+    if (panel) panel.remove();
+    return;
+  }
+
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'helper-draft-panel';
+    panel.className = 'helper-draft-panel';
+    inputArea.insertBefore(panel, inputArea.firstChild);
+  }
+
+  const type = state.helperDraftPanel.type;
+  const candidates = getHelperDraftCandidates(type);
+  const labelMap = {
+    topic: '👵🏻 話題候補',
+    wait: '👵🏻 待って文',
+    goal: '📄 今日の目的',
+    close: '👵🏻 閉店文'
+  };
+
+  panel.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.className = 'helper-draft-head';
+  const title = document.createElement('span');
+  title.textContent = labelMap[type] || '👵🏻 候補';
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'helper-draft-close';
+  closeBtn.textContent = 'もどる';
+  closeBtn.addEventListener('click', hideHelperDraftPanel);
+  head.appendChild(title);
+  head.appendChild(closeBtn);
+  panel.appendChild(head);
+
+  if (type === 'goal') {
+    const summary = document.createElement('div');
+    summary.className = 'helper-draft-summary';
+    summary.textContent = candidates[0] || '目的：未設定';
+    panel.appendChild(summary);
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'helper-draft-candidates';
+  candidates.forEach((text, index) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'helper-draft-candidate';
+    btn.dataset.index = String(index);
+    btn.textContent = text;
+    btn.addEventListener('click', () => insertHelperDraftCandidate(index));
+    list.appendChild(btn);
+  });
+  panel.appendChild(list);
+}
+
 // ----- 助け舟ボトムシート（Ver.0.5-B）-----
 function toggleHelpMenu() {
   uiState.assistantTeam.helpMenuOpen = !uiState.assistantTeam.helpMenuOpen;
@@ -1464,17 +1612,17 @@ function renderHelpMenu() {
 
   root.innerHTML =
     '<div class="help-menu-backdrop" onclick="closeHelpMenu()"></div>' +
-    '<div class="help-menu-panel">' +
+    '<div class="help-menu-panel help-menu-panel-v06b">' +
       '<div class="help-menu-handle"></div>' +
       '<div class="help-menu-title">👵🏻 助け舟</div>' +
-      '<p class="help-menu-microcopy">👵🏻 本音を言う権利と、断る権利は、いつでもセットやで。</p>' +
-      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;awkward&#39;)">😳 気まずい / 沈黙</button>' +
-      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;waiting_reply&#39;)">⏳ 返事を待ってもらいたい</button>' +
-      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;purpose&#39;)">🔥 目的をはっきりさせたい</button>' +
-      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;safety_check&#39;)">🦺 安全確認したい</button>' +
-      '<button type="button" class="help-menu-item" onclick="handleOpenChoiceShelf()">🎲 迷ったら整理棚</button>' +
-      '<button type="button" class="help-menu-item" onclick="handleHelpIssue(&#39;close_today&#39;)">🚪 今日はここまでにしたい</button>' +
-      '<button type="button" class="help-menu-close" onclick="closeHelpMenu()">閉じる</button>' +
+      '<p class="help-menu-microcopy">👵🏻 次の一手だけ選んでな。</p>' +
+      '<div class="help-menu-grid-v06b">' +
+        '<button type="button" class="help-menu-item help-menu-item-back" onclick="closeHelpMenu()">もどる</button>' +
+        '<button type="button" class="help-menu-item" onclick="showHelperDraftPanel(&#39;topic&#39;)">話題かえる</button>' +
+        '<button type="button" class="help-menu-item" onclick="showHelperDraftPanel(&#39;wait&#39;)">ちょっと待って</button>' +
+        '<button type="button" class="help-menu-item" onclick="showHelperDraftPanel(&#39;goal&#39;)">目的みる</button>' +
+        '<button type="button" class="help-menu-item" onclick="showHelperDraftPanel(&#39;close&#39;)">今日はここで</button>' +
+      '</div>' +
     '</div>';
 }
 
