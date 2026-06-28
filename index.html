@@ -2,851 +2,150 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#faf8f4">
-  <title>YUUEKi.com</title>
-  <meta name="description" content="目的を言う自由。断る自由。気まずくならずに話し始める一対一ルーム。YUUEKi.com">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="YUUEKi.com">
+  <title>ヒデロックテンプレ法©️ - 素材投入型マニュファクチュア工場©️</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
+<header class="app-header">
+  <div class="brand">
+    <span class="app-title">ヒデロックテンプレ法©️</span>
+    <span class="app-subtitle">素材投入型マニュファクチュア工場©️</span>
+  </div>
+  <div class="maker">制作：オノノケホールディングス😲©️</div>
+</header>
 
-    <!-- ========================================
-         画面1: トップ画面
-    ========================================= -->
-    <div id="screen-top" class="screen active">
-      <div class="top-hero">
-        <div class="yuueki-logo-wrap">
-          <span class="yuueki-logo-main">YUUEKi.com</span>
-          <span class="yuueki-logo-sub">👵🏻 つながろおばちゃんのガイド付き</span>
-        </div>
-        <p class="yuueki-copy">目的を言う自由。<br>断る自由。<br>気まずくならずに話し始める場所。</p>
-      </div>
+<main class="app-main">
+  <section id="factory-section" class="card card-main factory-card">
+    <h2>素材投入型マニュファクチュア工場©️</h2>
+    <p class="hint strong-hint">素材を投入口に入れて、加工先と工場ラインを選びます。</p>
+    <p class="hint">工程はあなたが全部埋めるのではなく、AIへの発注文に組み込まれます。</p>
 
-      <div class="top-desc-card">
-        <p>YUUEKi.com は、人間関係の目的を最初から正直に置ける一対一ルームです。</p>
-        <p style="margin-top:8px;">恋愛のふりをしなくていい。<br>ただ話したいも、会いたいも、境界線つきで最初から置けます。</p>
-      </div>
+    <label for="input-material" class="factory-label">1. 素材投入口</label>
+    <p class="hint">変な言葉・違和感・体感・出来事など、素材をそのまま入れてください。</p>
+    <textarea id="input-material" class="big-textarea" placeholder="例）アプリを作ったけど、入力欄を埋めるのが難しくて固まった"></textarea>
 
-      <div class="top-buttons">
-        <button class="btn btn-primary" onclick="goTo('screen-torisetsu-intro')">
-          👵🏻 トリセツを作る
-        </button>
-        <button class="btn btn-secondary" onclick="goToWaitingRoom()">
-          仮想ルームを試してみる
-        </button>
-        <button class="btn btn-ghost" onclick="goTo('screen-complete-view')">
-          今日は見るだけ
-        </button>
-      </div>
-
-      <div class="top-philosophy">
-        <p>隠すからズレる。<br>ごまかすから重くなる。<br>恋愛のふりをするから、あとで傷つく。</p>
-        <p style="margin-top:8px;">YUUEKi.com は、成人同士の合意と撤退権を前提に、目的を正直に置ける場所です。<br>自分の目的を言う自由と、相手が断る自由は、いつでもセットです。</p>
-        <p class="note-text" style="margin-top:8px;">AIは本人の代筆をしません。</p>
-      </div>
-
-      <!-- スポンサー枠（仮） -->
-      <div class="sponsor-bar" id="sponsor-bar-top">
-        <span class="sponsor-label">PR</span>
-        <span class="sponsor-text">この茶の間は、〇〇珈琲の提供でお送りしています。広告やけどな。無理に押さんでええよ。</span>
+    <div class="factory-group">
+      <div class="factory-label">2. 加工先を選ぶ</div>
+      <div class="factory-destinations" role="radiogroup" aria-label="加工先">
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="method" checked> 方法©️化</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="note"> note記事化</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="ai_request"> AI依頼文化</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="spec"> アプリ仕様化</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="rodo"> ロードー判断</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="hospital"> 病院説明</label>
+        <label class="choice-pill"><input type="radio" name="factory-destination" value="creative"> 創作ネタ化</label>
       </div>
     </div>
 
-    <!-- ========================================
-         画面2: トリセツ作成イントロ
-    ========================================= -->
-    <div id="screen-torisetsu-intro" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="obasan-speech">
-        <div class="obasan-face">👵🏻</div>
-        <div class="speech-bubble">
-          <p>ほな、あんたのトリセツを作りましょか。</p>
-          <p>プロフィールやないよ。<br>
-          「これが嫌」「これは大丈夫」を整理するだけ。</p>
-          <p>答えられるところだけでええからな。<br>
-          あとから直せます。</p>
-        </div>
-        <p class="speech-note">
-          6つだけ聞きます。<br>
-          「あとで答える」を選んでも大丈夫です。
-        </p>
-      </div>
-
-      <div style="padding: 0 20px; margin-top: 8px;">
-        <button class="btn btn-primary" onclick="startTorisetsu()">
-          ほな、始めましょか
-        </button>
-        <button class="btn btn-ghost" style="margin-top:10px;" onclick="goTo('screen-intervention-level')">
-          質問はいいので介入度だけ決める
-        </button>
+    <div class="factory-group">
+      <div class="factory-label">3. 使用する工場ライン</div>
+      <p class="hint">複数選択できます。最初は全部ONでOK。</p>
+      <div class="factory-lines">
+        <label class="choice-pill"><input type="checkbox" id="line-basic5" checked> 基本5工程</label>
+        <label class="choice-pill"><input type="checkbox" id="line-theater" checked> 劇団員チェック</label>
+        <label class="choice-pill"><input type="checkbox" id="line-translate" checked> 地上語翻訳</label>
+        <label class="choice-pill"><input type="checkbox" id="line-next" checked> 次の一手</label>
+        <label class="choice-pill"><input type="checkbox" id="line-notdo" checked> やらないこと</label>
       </div>
     </div>
 
-    <!-- ========================================
-         画面3: トリセツ質問（6問）
-    ========================================= -->
-    <div id="screen-torisetsu-questions" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="progress-wrap">
-        <div class="progress-label" id="tq-progress-label">質問 1 / 6</div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="tq-progress-fill" style="width: 16.6%"></div>
-        </div>
-      </div>
-
-      <div class="screen-content" id="torisetsu-question-container">
-        <!-- JSで動的に挿入 -->
-      </div>
+    <div class="factory-actions">
+      <button id="flow-to-factory-button" class="primary-button factory-button" type="button">劇団工場に流す</button>
+      <button id="copy-button" class="secondary-button copy-button" type="button">AIに渡す文をコピー</button>
     </div>
+  </section>
 
-    <!-- ========================================
-         画面4: おばちゃん介入度選択
-    ========================================= -->
-    <div id="screen-intervention-level" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div>
-          <h2 class="section-title">おばちゃんに、どれくらい<br>間に入ってほしい？</h2>
-          <p class="section-subtitle" style="margin-top:6px;">あとから変えられます。</p>
-        </div>
-
-        <div class="obasan-level-list">
-          <div class="level-card" onclick="selectInterventionLevel(this, 'watch')">
-            <div class="level-num">レベル 1</div>
-            <div class="level-name">そっと見守る</div>
-            <div class="level-desc">呼ばれた時だけ動く。基本は黙って見てる。</div>
-            <div class="level-meter">
-              <div class="level-dot on"></div>
-              <div class="level-dot"></div>
-              <div class="level-dot"></div>
-              <div class="level-dot"></div>
-            </div>
-          </div>
-
-          <div class="level-card" onclick="selectInterventionLevel(this, 'help')">
-            <div class="level-num">レベル 2</div>
-            <div class="level-name">困った時だけ助ける</div>
-            <div class="level-desc">NG話題が出た時や、会話が止まった時だけ入る。</div>
-            <div class="level-meter">
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-              <div class="level-dot"></div>
-              <div class="level-dot"></div>
-            </div>
-          </div>
-
-          <div class="level-card" onclick="selectInterventionLevel(this, 'active')">
-            <div class="level-num">レベル 3</div>
-            <div class="level-name">ちょいちょい間に入る</div>
-            <div class="level-desc">話の流れを見て、適度に話題を振ったり整理したりする。</div>
-            <div class="level-meter">
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-              <div class="level-dot"></div>
-            </div>
-          </div>
-
-          <div class="level-card" onclick="selectInterventionLevel(this, 'full')">
-            <div class="level-num">レベル 4</div>
-            <div class="level-name">かなりおせっかいに支える</div>
-            <div class="level-desc">積極的に場を仕切る。不安な人向け。</div>
-            <div class="level-meter">
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-              <div class="level-dot on"></div>
-            </div>
-          </div>
-        </div>
-
-        <p class="note-text">
-          おばちゃんは本人の代筆はしません。<br>
-          必要な時だけ、おばちゃんとして公然と発言します。
-        </p>
-
-        <button class="btn btn-primary" id="intervention-next-btn" onclick="goTo('screen-torisetsu-confirm')" disabled
-          style="opacity:0.4;">
-          次へ進む
-        </button>
-      </div>
+  <section class="card info-card">
+    <h2>消えない台帳</h2>
+    <p class="hint strong-hint">入力中の内容は、この端末のブラウザ内に自動保存されます。</p>
+    <p class="hint">これは本格的な方法©️棚ではなく、作業中の紙が風で飛ばないための文鎮です。</p>
+    <div class="draft-tools">
+      <button id="clear-draft-button" class="secondary-button clear-draft-btn" type="button">台帳を空にする</button>
     </div>
+  </section>
 
-    <!-- ========================================
-         画面5: トリセツ確認画面
-    ========================================= -->
-    <div id="screen-torisetsu-confirm" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
+  <section class="card card-output">
+    <h2>出荷口（AIに渡す発注文）</h2>
+    <p class="hint">下記の文をAIチャットなどにそのまま貼り付けて使えます。</p>
+    <pre id="output-text" class="output-box"></pre>
+  </section>
 
-      <div class="ledger-header">
-        <div class="obasan-face">👵🏻</div>
-        <p>こんな感じでトリセツにしてみたで。<br>
-        違うところがあったら直せるからな。</p>
+  <section class="legacy-manual-section hidden" aria-hidden="true">
+    <section class="card-group">
+      <h2>旧・基本工程カード</h2>
+      <div class="card">
+        <h3>1. 拾う</h3>
+        <p class="hint">素材のどこが「変」か、どこを拾いたいか。</p>
+        <textarea id="step-pick" class="big-textarea"></textarea>
       </div>
+      <div class="card">
+        <h3>2. 名前をつける</h3>
+        <p class="hint">呼べるあだ名・ラベル・技名など。</p>
+        <textarea id="step-name" class="big-textarea"></textarea>
+      </div>
+      <div class="card">
+        <h3>3. レイヤー分解</h3>
+        <p class="hint">身体 / 現実 / 創作 / 仕事 / AI / 社会語 に分けてみる。</p>
+        <textarea id="step-layer" class="big-textarea"></textarea>
+      </div>
+      <div class="card">
+        <h3>4. 地上語へ翻訳</h3>
+        <p class="hint">他人やAIに渡せる説明文にする。</p>
+        <textarea id="step-translate" class="big-textarea"></textarea>
+      </div>
+      <div class="card">
+        <h3>5. 方法©️化</h3>
+        <p class="hint">次回も使える「工程」として書き出す。</p>
+        <textarea id="step-method" class="big-textarea"></textarea>
+      </div>
+    </section>
 
-      <div class="ledger-blocks" id="torisetsu-blocks" style="margin-top: 16px;">
-        <!-- JSで動的に生成 -->
-      </div>
+    <section class="card-group">
+      <h2>旧・劇団員検査レイヤー</h2>
+      <div class="card crew-card"><h3>✍️ 文脈翻訳者</h3><textarea id="crew-context" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>👨🏻‍🔧 工夫さん</h3><textarea id="crew-kufu" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>⚖️ マルクスAI</h3><textarea id="crew-marx" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>💰 商人AI</h3><textarea id="crew-merchant" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>🚧 現実君</h3><textarea id="crew-reality" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>🐰 ねむうさ品質管理課</h3><textarea id="crew-sleepy" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>👵🏻🔍 詐欺見抜き婆さん</h3><textarea id="crew-fraud" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>🦅 競争手を見る鷹</h3><textarea id="crew-competition" class="medium-textarea"></textarea></div>
+      <div class="card crew-card"><h3>🎩 Hiderock Japan</h3><textarea id="crew-hiderock" class="medium-textarea"></textarea></div>
+    </section>
 
-      <div class="ledger-memo-block" style="margin-top: 10px;">
-        <div class="ledger-memo-label">👵🏻 おばちゃんメモ</div>
-        <div class="ledger-memo-value" id="torisetsu-obasan-memo">
-          あんたのトリセツ、ちゃんと預かったよ。
-        </div>
-      </div>
+    <section class="card">
+      <h2>旧・最終判定</h2>
+      <select id="final-decision" class="select-large">
+        <option value="">選択してください</option>
+        <option value="出荷">出荷</option>
+        <option value="小さく試す">小さく試す</option>
+        <option value="保留">保留</option>
+        <option value="棚戻し">棚戻し</option>
+        <option value="今はやらない">今はやらない</option>
+      </select>
+    </section>
 
-      <div class="ledger-buttons" style="margin-top: 16px;">
-        <button class="btn btn-primary" onclick="saveTorisetsuAndProceed()">
-          このトリセツで進む
-        </button>
-        <button class="btn btn-secondary" onclick="goTo('screen-torisetsu-questions')">
-          少し直す
-        </button>
-        <button class="btn btn-ghost" onclick="goTo('screen-partner-select')">
-          仮想ルームを試す
-        </button>
+    <section class="card-group">
+      <div class="card">
+        <h2>旧・次の一手</h2>
+        <textarea id="next-action" class="medium-textarea"></textarea>
       </div>
+      <div class="card">
+        <h2>旧・やらないこと</h2>
+        <textarea id="not-do" class="medium-textarea"></textarea>
+      </div>
+    </section>
+
+    <div class="hidden" aria-hidden="true">
+      <button id="generate-quick-button" type="button">素材ワンパン生成</button>
+      <button id="generate-full-button" type="button">全部入り生成</button>
     </div>
+  </section>
+</main>
 
-    <!-- ========================================
-         待合室画面A: 待合室トップ（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-waiting-room" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-top')">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
+<div id="toast" class="toast">コピーしました。</div>
 
-      <div class="waiting-room-content">
-        <div class="waiting-room-hero">
-          <div class="waiting-room-emoji">👵🏻</div>
-          <h2 class="waiting-room-title">茶の間の待合室</h2>
-          <p class="waiting-room-sub">話す前に、今日の目的を整えましょう。</p>
-        </div>
-
-        <div class="waiting-room-desc">
-          <p>目的を言う自由。<br>断る自由。<br>見送られる安全。</p>
-          <p style="margin-top:8px;">今日の目的を最初から正直に置ける場所です。</p>
-        </div>
-
-        <div class="waiting-room-steps">
-          <div class="waiting-step">
-            <span class="waiting-step-num">1</span>
-            <span class="waiting-step-text">目的を選ぶ</span>
-          </div>
-          <div class="waiting-step-arrow">↓</div>
-          <div class="waiting-step">
-            <span class="waiting-step-num">2</span>
-            <span class="waiting-step-text">話せる時間を選ぶ</span>
-          </div>
-          <div class="waiting-step-arrow">↓</div>
-          <div class="waiting-step">
-            <span class="waiting-step-num">3</span>
-            <span class="waiting-step-text">おばちゃんのカードを確認</span>
-          </div>
-          <div class="waiting-step-arrow">↓</div>
-          <div class="waiting-step">
-            <span class="waiting-step-num">4</span>
-            <span class="waiting-step-text">茶の間へ</span>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="goToSelectPurpose()">
-          今日の目的を決める
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================
-         待合室画面B: 目的選択（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-select-purpose" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-waiting-room')">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div class="screen-heading">
-          <h2 class="section-title">今日の目的は？</h2>
-          <p class="section-subtitle">正直に置いてください。相手には最初から見えます。</p>
-        </div>
-
-        <div class="purpose-list">
-          <button class="purpose-card" onclick="selectPurpose('talk')">
-            <span class="purpose-card-label">ただ話したい</span>
-            <span class="purpose-card-sub">日常や軽い雑談をしたい</span>
-          </button>
-          <button class="purpose-card" onclick="selectPurpose('friend')">
-            <span class="purpose-card-label">友達・趣味の話</span>
-            <span class="purpose-card-sub">気の合う人とゆっくり話したい</span>
-          </button>
-          <button class="purpose-card" onclick="selectPurpose('date')">
-            <span class="purpose-card-label">恋人・パートナー探し</span>
-            <span class="purpose-card-sub">真面目に出会いの可能性を見たい</span>
-          </button>
-          <button class="purpose-card" onclick="selectPurpose('lonely')">
-            <span class="purpose-card-label">今日はちょっと寂しい</span>
-            <span class="purpose-card-sub">ただ誰かの気配がほしい</span>
-          </button>
-          <button class="purpose-card" onclick="selectPurpose('short')">
-            <span class="purpose-card-label">短時間だけ話したい</span>
-            <span class="purpose-card-sub">少しだけ誰かと話したい</span>
-          </button>
-          <button class="purpose-card purpose-card--sex" onclick="selectPurpose('sex')">
-            <span class="purpose-card-label">セックスパートナーを探したい</span>
-            <span class="purpose-card-sub">成人同士・目的一致・断る自由が前提</span>
-          </button>
-          <button class="purpose-card purpose-card--undecided" onclick="selectPurpose('undecided')">
-            <span class="purpose-card-label">まだ決まっていない</span>
-            <span class="purpose-card-sub">おばちゃんと一緒に整理したい</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================
-         待合室画面B-sex: セックス目的確認（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-sex-confirm" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="cancelSexPurpose()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div class="sex-confirm-card">
-          <div class="sex-confirm-icon">👋🏻</div>
-          <h2 class="sex-confirm-title">確認してください</h2>
-          <div class="sex-confirm-body">
-            <p>この目的は、成人同士の同意と目的一致が前提です。</p>
-            <p style="margin-top:8px;">相手には断る自由があります。<br>断られても责めない、急かさない、境界線を守る。<br>それを守れる場合だけ、この目的で進んでください。</p>
-          </div>
-          <button class="btn btn-primary" style="margin-top:16px;" onclick="confirmSexPurpose()">
-            理解して進む
-          </button>
-          <button class="btn btn-ghost" style="margin-top:8px;" onclick="cancelSexPurpose()">
-            別の目的を選ぶ
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================
-         待合室画面C: 話せる時間選択（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-select-time" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-select-purpose')">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div class="screen-heading">
-          <h2 class="section-title">話せる時間は？</h2>
-          <p class="section-subtitle">相手に最初から伝わります。</p>
-        </div>
-
-        <div class="talktime-list">
-          <button class="talktime-card" onclick="selectTalkTime('five')">
-            <span class="talktime-card-label">5分だけ</span>
-            <span class="talktime-card-sub">ほんの少しだけ</span>
-          </button>
-          <button class="talktime-card" onclick="selectTalkTime('ten')">
-            <span class="talktime-card-label">10分くらい</span>
-            <span class="talktime-card-sub">軽く話す</span>
-          </button>
-          <button class="talktime-card" onclick="selectTalkTime('thirty')">
-            <span class="talktime-card-label">30分くらい</span>
-            <span class="talktime-card-sub">お茶一杯分</span>
-          </button>
-          <button class="talktime-card" onclick="selectTalkTime('slow')">
-            <span class="talktime-card-label">のんびり</span>
-            <span class="talktime-card-sub">急がず話す</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================
-         待合室画面D: おばちゃん紹介カード（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-obachan-card" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-select-time')">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div class="obachan-intro-card">
-          <div class="obachan-intro-header">
-            <span class="obachan-intro-emoji">👵🏻</span>
-            <span class="obachan-intro-name">つながろおばちゃん</span>
-          </div>
-          <div class="obachan-intro-body">
-            <p>ワシはつながろおばちゃん。<br>
-            会話がピタッと止まったり、<br>
-            なんか違うな、やめたいなと思った時は、<br>
-            遠慮なくワシを呼びなはれ。</p>
-            <p style="margin-top:8px;">間に入って、空気を少しゆるめるで。<br>用が済んだら、すぐ帰るからな🍵</p>
-          </div>
-        </div>
-
-        <div class="obachan-settings-block">
-          <div class="obachan-settings-title">今回の設定</div>
-          <div id="obachan-card-settings">
-            <!-- JSのrenderObachanCard()で動的に描画 -->
-          </div>
-        </div>
-
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="goToMatchWaiting()">
-          この設定で茶の間へ
-        </button>
-        <button class="btn btn-ghost" style="margin-top:8px;" onclick="goToSelectPurpose()">
-          目的を選び直す
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================
-         待合室画面E: 相手確認中（Ver.0.6-A）
-    ========================================= -->
-    <div id="screen-match-waiting" class="screen">
-      <div class="match-waiting-content">
-        <div class="match-waiting-emoji">🍵</div>
-        <p class="match-waiting-text">おばちゃんが茶の間を整えています…</p>
-        <p class="match-waiting-sub">少しだけお待ちください🍵</p>
-        <div class="match-waiting-dots">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================
-         画面6: 仮想相手選択画面
-    ========================================= -->
-    <div id="screen-partner-select" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="screen-content">
-        <div>
-          <h2 class="section-title">仮想のお相手を選んでください</h2>
-          <p class="section-subtitle" style="margin-top:6px;">本物の相手とはつながりません。練習用です。</p>
-        </div>
-
-        <div class="partner-preset-list" id="partner-preset-list">
-          <!-- JSで動的に生成 -->
-        </div>
-
-        <button class="btn btn-primary" id="partner-next-btn" onclick="startVirtualRoom()" disabled
-          style="opacity:0.4; margin-top:8px;">
-          この相手と話してみる
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================
-         画面7: 一対一ルーム（仮想）
-    ========================================= -->
-    <div id="screen-room" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-waiting-room')">← 戻る</button>
-        <span class="app-logo" id="room-header-title">👵🏻 一対一ルーム</span>
-        <span class="room-version">v0.6B-i1</span>
-      </div>
-
-      <!-- スポンサー枠（仮） -->
-      <div class="sponsor-bar sponsor-bar-room" id="sponsor-bar-room">
-        <span class="sponsor-label">PR</span>
-        <span class="sponsor-text">この茶の間は、〇〇珈琲の提供でお送りしています。</span>
-      </div>
-
-      <!-- ルーム情報バー -->
-      <div class="room-info-bar" id="room-info-bar">
-        <div class="room-info-item">
-          <span class="room-info-label">OK</span>
-          <span class="room-info-value" id="room-ok-topics">—</span>
-        </div>
-        <div class="room-info-item">
-          <span class="room-info-label">NG</span>
-          <span class="room-info-value room-info-ng" id="room-ng-topics">—</span>
-        </div>
-        <div class="room-info-item">
-          <span class="room-info-label">設定</span>
-          <span class="room-info-value" id="room-obasan-mode">見守り中</span>
-        </div>
-      </div>
-
-      <!-- おばさん状態バー（最小表示：アイコン＋モード名のみ） -->
-      <div class="room-status-bar" id="room-status-bar">
-        <span class="room-status-icon" id="room-status-icon">👵🏻</span>
-        <span class="room-status-text" id="room-status-text">見守り中</span>
-      </div>
-
-      <!-- 状態帯カード（Ver.0.5-B）：uiState.assistantTeam.statusVisibleがtrueの時に表示 -->
-      <div class="assistant-status-card hidden" id="assistant-status-card">
-        <!-- JSのrenderAssistantStatusCard()で動的に描画 -->
-      </div>
-
-      <!-- チャットタイムライン -->
-      <div class="chat-container" id="chat-container">
-        <!-- JSで動的に追加 -->
-      </div>
-
-      <!-- TODO: 準備中キャラ（ダモリさん・ノリ助・ヒデロコ）は将来ここに復活予定 -->
-
-      <!-- あみだ：低リスク確認パネル -->
-      <div class="amida-panel hidden" id="amida-risk-check">
-        <div class="amida-panel-header">🎲 おばちゃんあみだ</div>
-        <div class="amida-panel-body" id="amida-risk-check-body">
-          <!-- JSで動的に追加 -->
-        </div>
-      </div>
-
-      <!-- あみだ：選択肢入力パネル -->
-      <div class="amida-panel hidden" id="amida-input-panel">
-        <div class="amida-panel-header">🎲 選択肢を入れてな（2〜4個）</div>
-        <div class="amida-note">⚠️ 個人情報・安全・お金・性的判断は入れないでください</div>
-        <div class="amida-inputs" id="amida-inputs">
-          <input class="amida-input" type="text" placeholder="選択肢 1" id="amida-choice-1" maxlength="30">
-          <input class="amida-input" type="text" placeholder="選択肢 2" id="amida-choice-2" maxlength="30">
-          <input class="amida-input" type="text" placeholder="選択肢 3（任意）" id="amida-choice-3" maxlength="30">
-          <input class="amida-input" type="text" placeholder="選択肢 4（任意）" id="amida-choice-4" maxlength="30">
-        </div>
-        <div class="amida-actions">
-          <button class="btn btn-primary" onclick="runAmida()">🎲 転がしてみる</button>
-          <button class="btn btn-ghost" onclick="cancelAmida()">やめる</button>
-        </div>
-      </div>
-
-      <!-- 整理棚誘導エリア（高リスク判定時） -->
-      <div class="amida-panel hidden" id="amida-sorting-panel">
-        <div class="amida-panel-header">🗂 迷ったら整理棚</div>
-        <div class="amida-panel-body" id="amida-sorting-body">
-          <!-- JSで動的に追加 -->
-        </div>
-        <div class="amida-actions">
-          <button class="btn btn-ghost" onclick="cancelAmida()">戻る</button>
-        </div>
-      </div>
-
-      <!-- 選択肢エリア -->
-      <div class="room-choice-list" id="room-choice-list">
-        <!-- JSで動的に追加 -->
-      </div>
-
-      <!-- 自分の入力欄 -->
-      <div class="room-input-area" id="room-input-area">
-        <button class="help-trigger" type="button" onclick="toggleHelpMenu()">👵🏻 助け舟</button>
-        <textarea
-          class="room-input-textarea"
-          id="room-input-textarea"
-          placeholder="メッセージを入力…"
-          rows="2"
-        ></textarea>
-        <button class="room-send-btn" type="button" onclick="sendMyMessage()">送信</button>
-      </div>
-
-      <!-- 助け舟ボトムシート（JSのrenderHelpMenu()で動的描画） -->
-      <div id="help-menu-root"></div>
-
-      <!-- 終了エリア -->
-      <div class="room-end-area" id="room-end-area">
-        <button class="btn btn-primary" onclick="startReview()">
-          ふりかえりをする
-        </button>
-        <button class="btn btn-ghost" style="margin-top:8px;" onclick="goTo('screen-top')">
-          トップへ戻る
-        </button>
-      </div>
-    </div>
-
-    <!-- ========================================
-         画面8: 会話後のふりかえり（Ver.0.3-A 6ステップ）
-    ========================================= -->
-    <div id="screen-review" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goBack()">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <!-- ステップインジケーター -->
-      <div class="review-step-indicator" id="review-step-indicator">
-        <span class="review-step-dot active" data-step="1"></span>
-        <span class="review-step-line"></span>
-        <span class="review-step-dot" data-step="2"></span>
-        <span class="review-step-line"></span>
-        <span class="review-step-dot" data-step="3"></span>
-        <span class="review-step-line"></span>
-        <span class="review-step-dot" data-step="4"></span>
-        <span class="review-step-line"></span>
-        <span class="review-step-dot" data-step="5"></span>
-        <span class="review-step-line"></span>
-        <span class="review-step-dot" data-step="6"></span>
-      </div>
-
-      <!-- Step 1: 今日の会話どうだった？ -->
-      <div class="review-step-panel" id="review-step-1">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text">
-              お疲れさん！ 今回のおしゃべりはどうやった？<br>
-              あんたが無理なく過ごせたかどうか、おばちゃんにちょっとだけ教えてな🍵
-            </div>
-          </div>
-
-          <div class="review-choice-list">
-            <button class="review-choice-btn" onclick="selectReviewStep1('ok')">
-              特に嫌なことはなく、のんびり話せたよ
-            </button>
-            <button class="review-choice-btn" onclick="selectReviewStep1('ng')">
-              ちょっとだけ「ん？」と思うところがあったかな
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 2: 嫌だったメッセージを選ぶ -->
-      <div class="review-step-panel hidden" id="review-step-2">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text">
-              気になった発言があれば、タップして選んでな。<br>
-              複数選んでも大丈夫やよ。
-            </div>
-          </div>
-
-          <p class="review-step-note">選ばなくてもそのまま次へ進めます</p>
-
-          <div class="review-message-list" id="review-message-list">
-            <!-- JSで会話ログから動的生成 -->
-          </div>
-
-          <div class="review-nav-buttons">
-            <button class="btn btn-primary" onclick="goReviewStep(3)">
-              次へ進む
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: モヤモヤ理由の複数選択 -->
-      <div class="review-step-panel hidden" id="review-step-3">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text">
-              そうか、ちょっとモヤモヤしたんやね。<br>
-              教えてくれてありがとうな。<br>
-              何が理由やったか、当てはまるやつを何個でも選んでな。<br>
-              あんたが悪いわけやないから、正直に言うてええんよ。
-            </div>
-          </div>
-
-          <div class="review-reasons-grid" id="review-reasons-grid">
-            <!-- JSで動的生成 -->
-          </div>
-
-          <div class="review-nav-buttons">
-            <button class="btn btn-primary" onclick="goReviewStep(4)">
-              次へ進む
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: 自由メモ -->
-      <div class="review-step-panel hidden" id="review-step-4">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text">
-              ほかに伝えておきたいことがあれば、ここへ書いてな。<br>
-              空欄でも大丈夫やよ。
-            </div>
-          </div>
-
-          <textarea
-            class="review-free-memo"
-            id="review-free-memo"
-            placeholder="選択肢になかったことや、おばちゃんに伝えておきたいモヤモヤがあれば、ここへ自由に書いてな。空欄でも大丈夫です。"
-            rows="5"
-          ></textarea>
-
-          <div class="review-nav-buttons">
-            <button class="btn btn-primary" onclick="goReviewStep(5)">
-              次へ進む
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 5: 次回のトリセツに反映する -->
-      <div class="review-step-panel hidden" id="review-step-5">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text">
-              今日のこと、次回のトリセツに活かしてもええかな？
-            </div>
-          </div>
-
-          <label class="review-reflect-check">
-            <input type="checkbox" id="review-reflect-checkbox" onchange="onReflectCheckChange(this)">
-            <span class="review-reflect-label">次回のトリセツに反映する</span>
-          </label>
-
-          <div class="review-nav-buttons">
-            <button class="btn btn-primary" onclick="saveReviewAndFinish()">
-              記録して終わる
-            </button>
-            <button class="btn btn-ghost" style="margin-top:8px;" onclick="goTo('screen-top')">
-              記録せずに終わる
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 6: おばちゃんの確認メッセージ（saveReviewAndFinish後に表示） -->
-      <div class="review-step-panel hidden" id="review-step-6">
-        <div class="screen-content">
-          <div class="review-obasan-bubble">
-            <span class="review-obasan-icon">👵🏻</span>
-            <div class="review-obasan-text" id="review-step6-message">
-              <!-- JSで動的に切り替え -->
-            </div>
-          </div>
-
-          <div class="review-nav-buttons" style="margin-top:24px;">
-            <button class="btn btn-primary" id="review-step6-btn" onclick="goTo('screen-review-done')">
-              <!-- JSで動的に切り替え -->
-            </button>
-            <button class="btn btn-secondary" style="margin-top:8px;" onclick="goTo('screen-partner-select')">
-              もう一度試してみる
-            </button>
-            <button class="btn btn-ghost" style="margin-top:8px;" onclick="goTo('screen-top')">
-              トップへ戻る
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ========================================
-         画面9: ふりかえり完了・トリセツ反映
-    ========================================= -->
-    <div id="screen-review-done" class="screen">
-      <div class="header-bar">
-        <span style="width:48px"></span>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="complete-screen">
-        <div class="complete-icon">📋</div>
-        <h2 class="complete-title">ふりかえり、記録したよ。</h2>
-        <p class="complete-desc" id="review-done-desc">
-          今日気づいたことを、トリセツに反映しておいたよ。<br>
-          次の時に活きてくるからな。
-        </p>
-
-        <div class="complete-stamp" id="review-done-stamp">
-          <strong>👵🏻 おばちゃんより</strong><br>
-          無理せんでええよ。<br>
-          今日試してみただけで、十分やからな。
-        </div>
-
-        <div class="complete-buttons">
-          <button class="btn btn-primary" onclick="goTo('screen-torisetsu-confirm')">
-            更新されたトリセツを見る
-          </button>
-          <button class="btn btn-secondary" onclick="goTo('screen-partner-select')">
-            もう一度試してみる
-          </button>
-          <button class="btn btn-ghost" onclick="goTo('screen-top')">
-            トップへ戻る
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================
-         「今日は見るだけ」用 簡易完了画面
-    ========================================= -->
-    <div id="screen-complete-view" class="screen">
-      <div class="header-bar">
-        <button class="back-btn" onclick="goTo('screen-top')">← 戻る</button>
-        <span class="app-logo">YUUEKi.com</span>
-        <span style="width:48px"></span>
-      </div>
-
-      <div class="complete-screen">
-        <div class="complete-icon">👵🏻</div>
-        <h2 class="complete-title">ゆっくり見てってな。</h2>
-        <p class="complete-desc">
-          急がなくていいよ。<br>
-          気が向いたら、また来てな。
-        </p>
-
-        <div class="complete-stamp">
-          トリセツを作るのは、あんたが準備できた時でええ。<br>
-          おばちゃん、ここで待ってるから。
-        </div>
-
-        <div class="complete-buttons">
-          <button class="btn btn-primary" onclick="goTo('screen-torisetsu-intro')">
-            やっぱりトリセツを作る
-          </button>
-          <button class="btn btn-secondary" onclick="goTo('screen-partner-select')">
-            仮想ルームを試す
-          </button>
-          <button class="btn btn-ghost" onclick="goTo('screen-top')">
-            トップへ戻る
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /#app -->
-
-  <script src="app.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
