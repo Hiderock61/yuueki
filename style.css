@@ -3460,3 +3460,31 @@ body.keyboard-active .sponsor-bar-room {
   line-height: 1.55;
   padding: 8px 10px;
 }
+
+
+/* ---- v0.6B-i1: helper draft panel layout fix ----
+/* 候補文パネルを入力欄の直上に出し、入力欄を縦つぶれさせない */
+#screen-room .room-input-area {
+  flex-wrap: wrap !important;
+  align-items: flex-end !important;
+}
+
+#screen-room .helper-draft-panel {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+  order: -1 !important;
+  margin: 0 0 6px !important;
+}
+
+#screen-room .help-trigger {
+  flex: 0 0 auto !important;
+}
+
+#screen-room .room-input-textarea {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
+#screen-room .room-send-btn {
+  flex: 0 0 auto !important;
+}
