@@ -1,7 +1,7 @@
 'use strict';
 
 // ============================================================
-// YUUEKi.com Ver.0.6B-helper-options — app.js
+// YUUEKi.com Ver.0.6B-i2-helper-options — app.js
 // ============================================================
 
 // ===== データモデル =====
@@ -1465,16 +1465,36 @@ function getHelperDraftCandidates(type) {
 
 function buildHelperGoalSummary() {
   const cfg = state.roomConfig;
-  if (!cfg) return '目的：未設定';
 
-  const purposeOpt = PURPOSE_OPTIONS.find(p => p.id === cfg.purpose);
-  const purposeLabel = purposeOpt ? purposeOpt.label : (cfg.purpose || '未設定');
-  const timeOpt = TALK_TIME_OPTIONS.find(t => t.id === cfg.talkTime);
-  const timeLabel = timeOpt ? timeOpt.label : (cfg.talkTime || '未設定');
-  const okText = (cfg.okTopics || []).slice(0, 2).join('・') || 'なんでも';
-  const ngText = (cfg.ngTopics || []).slice(0, 2).join('・') || '特になし';
+  if (cfg) {
+    const purposeOpt = PURPOSE_OPTIONS.find(p => p.id === cfg.purpose);
+    const purposeLabel = purposeOpt ? purposeOpt.label : (cfg.purpose || '未設定');
+    const timeOpt = TALK_TIME_OPTIONS.find(t => t.id === cfg.talkTime);
+    const timeLabel = timeOpt ? timeOpt.label : (cfg.talkTime || '未設定');
+    const okText = (cfg.okTopics || []).slice(0, 2).join('・') || 'なんでも';
+    const ngText = (cfg.ngTopics || []).slice(0, 2).join('・') || '特になし';
 
-  return '目的：' + purposeLabel + '\n時間：' + timeLabel + '\nOK：' + okText + ' / NG：' + ngText;
+    return '目的：' + purposeLabel + '\n時間：' + timeLabel + '\nOK：' + okText + ' / NG：' + ngText;
+  }
+
+  // v0.6B-i2: 旧来の「相手を選ぶ」ルートでは roomConfig が無いので、
+  // 画面上の情報バーから短く復元する。
+  const titleEl = document.getElementById('room-header-title');
+  const okEl = document.getElementById('room-ok-topics');
+  const ngEl = document.getElementById('room-ng-topics');
+  const modeEl = document.getElementById('room-obasan-mode');
+
+  let roomTitle = titleEl ? titleEl.textContent.replace(/^[^\w\u3040-\u30ff\u3400-\u9fff]+/, '').replace('との部屋', '').trim() : '';
+  const okText = okEl ? okEl.textContent.trim() : '';
+  const ngText = ngEl ? ngEl.textContent.trim() : '';
+  const modeText = modeEl ? modeEl.textContent.trim() : '';
+
+  const lines = [];
+  if (roomTitle) lines.push('部屋：' + roomTitle);
+  if (modeText && modeText !== '見守り中') lines.push('設定：' + modeText);
+  if (okText || ngText) lines.push('OK：' + (okText || '—') + ' / NG：' + (ngText || '—'));
+
+  return lines.join('\n') || '部屋の設定はまだありません。';
 }
 
 function showHelperDraftPanel(type) {
