@@ -3587,3 +3587,73 @@ body.keyboard-active .sponsor-bar-room {
 #screen-room .room-input-area {
   padding-top: 4px !important;
 }
+
+
+/* ---- v0.6B-i4: iPhone scroll-lock / page wobble reduction ---- */
+html.room-active,
+body.room-active {
+  height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  background: var(--color-bg) !important;
+}
+
+body.room-active #app {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+body.room-active #screen-room.active {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+}
+
+/* 外側のページではなく、会話ログだけをスクロールさせる */
+body.room-active #screen-room .chat-container {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scroll-behavior: auto !important;
+}
+
+/* 入力欄は下に固定気味に残し、外側スクロールの揺れを減らす */
+body.room-active #screen-room .room-input-area {
+  flex-shrink: 0 !important;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* メッセージ追加時の縦移動アニメを切って、グラつきを減らす */
+body.room-active #screen-room .message,
+body.room-active #screen-room .screen.active {
+  animation: none !important;
+}
+
+/* 助け舟パネルは軽く出す。背景側のページは動かさない */
+body.room-active #screen-room .help-menu-backdrop {
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+}
+
+body.room-active #screen-room .help-menu-panel {
+  max-height: 48svh !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+@supports not (height: 100svh) {
+  body.room-active #app,
+  body.room-active #screen-room.active {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}

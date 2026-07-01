@@ -1,7 +1,7 @@
 'use strict';
 
 // ============================================================
-// YUUEKi.com Ver.0.6B-i2-helper-options — app.js
+// YUUEKi.com Ver.0.6B-i4-scroll-lock — app.js
 // ============================================================
 
 // ===== データモデル =====
@@ -683,6 +683,7 @@ function goTo(screenId) {
     next.classList.add('active');
     next.scrollTop = 0;
   }
+  setRoomViewportLock(screenId === 'screen-room');
 }
 
 function goBack() {
@@ -698,6 +699,13 @@ function goBack() {
     prevScreen.classList.add('active');
     prevScreen.scrollTop = 0;
   }
+  setRoomViewportLock(prev === 'screen-room');
+}
+
+// ----- Ver.0.6B-i4: 会話部屋だけページ全体の揺れを抑える -----
+function setRoomViewportLock(isRoom) {
+  document.body.classList.toggle('room-active', !!isRoom);
+  document.documentElement.classList.toggle('room-active', !!isRoom);
 }
 
 // ===== HTML エスケープ =====
@@ -1128,7 +1136,10 @@ function addMessage(type, text, delay, metaOrCharOpts) {
 function scrollToBottom() {
   const container = document.getElementById('chat-container');
   if (!container) return;
-  container.scrollTop = container.scrollHeight;
+  // iPhoneで連続スクロール命令が画面を揺らすため、描画後に1回だけ下へ寄せる
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
 }
 
 // ----- 状態バー更新 -----
