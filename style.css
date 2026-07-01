@@ -3488,3 +3488,102 @@ body.keyboard-active .sponsor-bar-room {
 #screen-room .room-send-btn {
   flex: 0 0 auto !important;
 }
+
+/* ---- v0.6B-i3: compact bubbles + snappy motion ---- */
+#screen-room {
+  --transition: 0.12s ease;
+}
+
+#screen-room .chat-container {
+  padding: 5px 8px 6px !important;
+  gap: 4px !important;
+}
+
+#screen-room .message {
+  max-width: 84% !important;
+  gap: 1px !important;
+  margin-bottom: 3px !important;
+  animation: fadeIn 0.12s ease both !important;
+}
+
+#screen-room .message-header {
+  gap: 3px !important;
+  margin-bottom: 0 !important;
+  line-height: 1.1 !important;
+}
+
+#screen-room .message-icon {
+  font-size: 0.88rem !important;
+}
+
+#screen-room .message-label {
+  font-size: 0.64rem !important;
+  letter-spacing: 0.02em !important;
+}
+
+#screen-room .message-body {
+  padding: 6px 9px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.42 !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+}
+
+#screen-room .message-partner .message-body,
+#screen-room .message-obasan .message-body {
+  border-width: 1px !important;
+}
+
+#screen-room .message-me .message-body {
+  padding: 7px 10px !important;
+  font-size: 0.84rem !important;
+  line-height: 1.38 !important;
+}
+
+#screen-room .message-character {
+  max-width: 82% !important;
+  margin-bottom: 4px !important;
+}
+
+#screen-room .message-character--obasan,
+#screen-room .message-character--manual,
+#screen-room .message-character--safety {
+  padding: 7px 9px !important;
+  border-width: 1px !important;
+  border-radius: 0 11px 11px 11px !important;
+}
+
+#screen-room .message-character .message-header {
+  margin-bottom: 2px !important;
+}
+
+#screen-room .message-character .message-body {
+  padding: 6px 8px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.42 !important;
+}
+
+#screen-room .help-menu-panel {
+  transition: transform 0.12s ease, opacity 0.12s ease !important;
+}
+
+#screen-room .helper-draft-panel {
+  padding: 7px 9px !important;
+  margin-bottom: 4px !important;
+}
+
+#screen-room .helper-draft-head {
+  margin-bottom: 5px !important;
+  font-size: 0.78rem !important;
+}
+
+#screen-room .helper-draft-candidate,
+#screen-room .helper-draft-summary {
+  padding: 7px 9px !important;
+  font-size: 0.80rem !important;
+  line-height: 1.38 !important;
+}
+
+#screen-room .room-input-area {
+  padding-top: 4px !important;
+}

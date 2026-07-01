@@ -635,16 +635,16 @@ function enterRoomFromWaitingRoom() {
 
   addMessage('obasan',
     'ほな、茶の間を用意したよ。\nゆっくりしていきなはれ🍵',
-    600
+    90
   ).then(function() {
     return addMessage('obasan',
       '今日の目的：' + purposeLabel + '\nOK話題：' + okDisplay + '\nNG話題：' + ngDisplay,
-      2000
+      220
     );
   }).then(function() {
     return addMessage('obasan',
       'ほな、おばちゃんはいったん下がるわ。\n困ったら「👵🏻 助け舟」ボタンを押してな。',
-      4000
+      420
     );
   }).then(function() {
     setRoomUIState(false);
@@ -1032,17 +1032,17 @@ function startVirtualRoom() {
     const ngDisplay = roomBoundary.blockedTopics.filter(v => v && v !== 'あとで答える').join('・') || '特になし';
     return addMessage('obasan',
       `この部屋のルールを確認しとくね。\nOK話題：${okDisplay}\nNG話題：${ngDisplay}`,
-      2000
+      220
     );
   }).then(() => {
     return addMessage('obasan',
       'ほな、おばちゃんはいったん下がるわ。\n困ったら「おばちゃんを呼ぶ」ボタンを押してな。',
-      4000
+      420
     );
   }).then(() => {
     // 相手の最初のメッセージ
     const firstMsg = partner.torisetsu.firstMessages[0];
-    return addMessage('partner', firstMsg, 5200);
+    return addMessage('partner', firstMsg, 700);
   }).then(() => {
     setRoomUIState(false);
   });
@@ -1223,7 +1223,7 @@ function sendMyMessage() {
     const partner = partnerPresets[state.selectedPartnerKey];
     if (partner) {
       const reply = partner.torisetsu.firstMessages[1] || 'そうなんですね。';
-      setTimeout(() => addMessage('partner', reply, 0), 1600);
+      setTimeout(() => addMessage('partner', reply, 0), 700);
     }
   }
 }
@@ -1247,7 +1247,7 @@ function callObasan() {
   // 初動メッセージ（仕様通り）
   addMessage('obasan',
     '呼んでくれてありがとうな。\nちょっとここでお茶でも飲んで、流れをゆるめよか。\n\n今すぐ言葉を探さなくて大丈夫。\nまずは落ち着いてな。\n\nこの中から、今いちばん近いやつを選んでみて。',
-    400,
+    90,
     { systemGenerated: true, interventionType: 'summoned', boundaryFlag: null, relatedToMessageId: null }
   ).then(() => {
     // OBASAN_ACTIONSから4択を生成
@@ -1271,7 +1271,7 @@ function handleObasanAction(actionId) {
 
     addMessage('obasan',
       'ちょっとストップな。\n今、じっくり言葉を選んでるところやから、少しだけ待ったげてな。\n\n急がんでええよ。\n焦らずいこか🍵',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'wait_reply', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       // 入力欄を再表示（言葉を選ぶ時間を与える）
@@ -1288,7 +1288,7 @@ function handleObasanAction(actionId) {
 
     addMessage('obasan',
       'ちょっと空気変えよか。\nおばちゃんが軽いお題を置いとくね。\n\n最近食べた美味しいものとか、最近見たものくらいからでええよ。',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'change_topic', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       state.roomCalledObasan = false;
@@ -1306,7 +1306,7 @@ function handleObasanAction(actionId) {
 
     addMessage('obasan',
       '了解や。\nここから少し、おばちゃんも一緒におるね。\n\n二人のトリセツを見ながら、ちょうどええ距離感で話せるように、間を持つわ。',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'obasan_join', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       state.roomCalledObasan = false;
@@ -1323,7 +1323,7 @@ function handleObasanAction(actionId) {
 
     addMessage('obasan',
       'よし、今日のおしゃべりはここまでにしよか。\n二人ともお疲れさん。\n\n目的やノリがちょっと違っただけやから、誰も悪うないで。\nおばちゃんがこの部屋、やわらかく閉じておくね。\n\nこのあと、ふりかえり部屋で次回の作戦会議しよか。',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'close_today', boundaryFlag: null, relatedToMessageId: null }
     ).then(() => {
       if (inputArea) inputArea.classList.add('hidden');
@@ -1681,7 +1681,7 @@ function startHelperAction(actionId) {
     updateStatusBar('🗂 整理棚で並べています…');
     addMessage('obasan',
       '迷ってることを一緒に並べてみよか。\n\n何に迷ってるか、チャットに書いてみてな。\nおばちゃんが一緒に考えるわ。',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'sort_choice' }
     );
 
@@ -1693,7 +1693,7 @@ function startHelperAction(actionId) {
     updateStatusBar('🛡 安全確認中…');
     addMessage('obasan',
       '安全の確認やな。\n\n今、相手から何か気になることはある？\n答えたくないことは答えなくていいし、\n媳なことがあればすぐ言ってな。',
-      300,
+      90,
       { systemGenerated: true, interventionType: 'safety_check' }
     );
   }
@@ -1755,7 +1755,7 @@ function onRiskCheckOk() {
   // おばちゃんメッセージをチャットに追加
   addMessage('obasan',
     'よし、ほな軽く転がしてみよか。\n迷ってる選択肢を2つから4つ入れてな。',
-    300,
+    90,
     { systemGenerated: true, interventionType: 'lottery_start' }
   ).then(() => {
     const inputPanel = document.getElementById('amida-input-panel');
@@ -1802,7 +1802,7 @@ function onRiskCheckNg() {
 
   addMessage('obasan',
     '立ち止まれてえらい。\nこれはくじで決めるには、ちょっと重いかもしれんな。\n安全や気持ちに関わることは、いったん整理して考えよか。',
-    300,
+    90,
     { systemGenerated: true, interventionType: 'lottery_blocked' }
   );
 }
